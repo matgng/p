@@ -462,7 +462,7 @@
             thumbnail.onclick = () => {
                 thumbnail.style.display = 'none';
                 errorMessage.style.display = 'none';
-                videoPlayer.src = `https://drive.google.com/file/d/${selectedMedia.videoId}/preview?autoplay=1`;
+                videoPlayer.src = `https://drive.google.com/file/d/${selectedMedia.videoId}/preview`;
                 videoPlayer.style.display = 'block';
                 videoPlayer.classList.add('visible');
             };
@@ -500,7 +500,7 @@
                 };
                 img.onclick = () => {
                     gridContainer.style.display = 'none';
-                    videoPlayer.src = `https://drive.google.com/file/d/${media.videoId}/preview?autoplay=1`;
+                    videoPlayer.src = `https://drive.google.com/file/d/${media.videoId}/preview`;
                     videoPlayer.style.display = 'block';
                     videoPlayer.classList.add('visible');
                 };
