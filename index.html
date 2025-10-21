@@ -3,609 +3,532 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galeria de Vídeos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>Galeria de Vídeos Moderna</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        :root {
+            --color-bg-dark: #121212;
+            --color-bg-light: #1E1E1E;
+            --color-primary: #00A8E8;
+            --color-primary-dark: #007EA7;
+            --color-text: #E0E0E0;
+            --color-text-muted: #888;
+            --border-radius: 12px;
+            --transition-speed: 0.3s;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: 'Poppins', sans-serif;
+            background-color: var(--color-bg-dark);
+            color: var(--color-text);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
-            margin: 0;
-            background: linear-gradient(to bottom, #2a2a2a, #1a1a3a);
-            color: #fff;
+            overflow-x: hidden;
+            padding-bottom: 30px;
         }
-        .container {
+        
+        body:has(#gallery-container[style*="flex"]) {
+            min-height: auto;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUpFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        #file-loader-section {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            max-width: 1400px;
+            text-align: center;
             padding: 20px;
-            box-sizing: border-box;
+            animation: fadeIn 0.5s ease-out;
+            min-height: 100vh;
+            width: 100%;
         }
-        .buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
+        
+        #file-drop-zone {
+            width: clamp(300px, 80vw, 500px);
+            padding: 40px 20px;
+            border: 2px dashed var(--color-text-muted);
+            border-radius: var(--border-radius);
+            background-color: var(--color-bg-light);
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
             cursor: pointer;
-            background-color: #00b7eb;
+        }
+        
+        #file-drop-zone.dragover { background-color: #2a2a2a; border-color: var(--color-primary); }
+        #file-drop-zone h2 { font-size: 1.5rem; margin-bottom: 10px; }
+        #file-drop-zone p { color: var(--color-text-muted); }
+        #jsonFileInput { display: none; }
+        
+        #gallery-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1600px;
+            padding: 20px;
+            padding-top: 50px;
+        }
+        
+        #main-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideUpFadeIn 0.5s ease-out;
+        }
+
+        #main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--color-primary), #00F5D4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            animation: slideUpFadeIn 0.5s ease-out 0.2s;
+            animation-fill-mode: backwards;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--color-primary);
             color: #fff;
             border: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+            border-radius: 50px;
+            transition: background-color var(--transition-speed), transform var(--transition-speed), box-shadow var(--transition-speed);
+            box-shadow: 0 4px 15px rgba(0, 168, 232, 0.2);
         }
-        button:hover {
-            background-color: #008bb0;
+
+        .btn:hover {
+            background-color: var(--color-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 168, 232, 0.3);
         }
-        #thumbnail {
-            width: 90vw;
-            height: 80vh;
-            max-width: 1200px;
-            object-fit: contain;
-            image-rendering: optimizeQuality;
-            cursor: pointer;
-            border: 2px solid #00b7eb;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 183, 235, 0.3);
+
+        .btn.back-btn { background-color: var(--color-bg-light); display: none; }
+
+        .view-wrapper {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16/9;
+            margin-bottom: 30px;
+            position: relative;
             display: none;
+        }
+
+        #thumbnail, #videoPlayer {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--border-radius);
+            border: 3px solid var(--color-primary);
+            box-shadow: 0 8px 30px rgba(0, 168, 232, 0.15);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.5s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            visibility: hidden;
         }
-        #thumbnail.visible {
+
+        #thumbnail { object-fit: contain; cursor: pointer; }
+        
+        #thumbnail.visible, #videoPlayer.visible {
             opacity: 1;
+            visibility: visible;
         }
-        #videoPlayer {
-            display: none;
-            width: 90vw;
-            height: 80vh;
-            max-width: 1200px;
-            border: 2px solid #00b7eb;
-            border-radius: 16px; /* Cantos mais arredondados para o player */
-            box-shadow: 0 4px 10px rgba(0, 183, 235, 0.3);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        #videoPlayer.visible {
-            opacity: 1;
-        }
+
         #gridContainer {
             display: none;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
             width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
+            padding: 20px 0;
+            margin-top: 0;
         }
-        .grid-item {
-            width: 100%;
-            aspect-ratio: 1/1;
-            object-fit: cover;
-            cursor: pointer;
-            border: 2px solid #00b7eb;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 183, 235, 0.3);
+        
+        .grid-item-link {
+            display: block;
+            aspect-ratio: 16/9;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
             opacity: 0;
-            transition: opacity 0.3s ease, transform 0.2s ease;
+            transform: translateY(20px);
+            animation: slideUpFadeIn 0.5s ease-out forwards;
+            /* Nova Borda para o Ver Todos */
+            border: 2px solid var(--color-bg-light);
         }
-        .grid-item:hover {
-            transform: scale(1.05);
+        
+        .grid-item-link:hover { transform: scale(1.05); box-shadow: 0 8px 25px rgba(0, 168, 232, 0.3); }
+        .grid-item-img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition-speed); }
+        .grid-item-link:hover .grid-item-img { transform: scale(1.1); }
+        .grid-item-link::after {
+            content: '▶'; font-size: 50px; color: white; position: absolute; inset: 0;
+            background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity var(--transition-speed); text-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-        .grid-item.visible {
-            opacity: 1;
-        }
-        #errorMessage {
-            color: #ff4d4d;
-            font-size: 16px;
-            margin-top: 10px;
+        .grid-item-link:hover::after { opacity: 1; }
+
+        /* Estilo para a seção de sugestões */
+        #suggestions-container {
+            width: 100%;
+            max-width: 1400px;
+            padding: 20px 0;
+            display: flex; /* Adicionado display flex para centralizar */
+            flex-direction: column;
+            align-items: center; /* Centraliza a coluna (titulo e wrapper) */
             display: none;
-            text-align: center;
-            max-width: 80%;
         }
-        @media (max-width: 600px) {
-            #gridContainer {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 10px;
-            }
-            button {
-                font-size: 14px;
-                padding: 8px 16px;
-            }
+
+        #suggestions-container h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center; /* Centraliza o título */
+            color: var(--color-primary);
+            width: 100%; /* Garante que o título use a largura máxima */
+            max-width: 1400px;
+        }
+        
+        /* Novo wrapper para centralizar o Flexbox com overflow */
+        .suggestions-wrapper {
+            width: 100%;
+            max-width: 100%; /* Adapta-se ao container principal */
+            margin: 0 auto;
+            /* Centraliza os itens dentro do flexbox se houver espaço (não aplicável com overflow-x) */
+        }
+        
+        #suggestions-grid {
+            display: flex; /* Mantido para single line */
+            flex-wrap: nowrap;
+            gap: 15px;
+            padding-bottom: 10px;
+            overflow-x: auto; /* Permite rolagem horizontal */
+            /* Centraliza o conteúdo se for menor que o wrapper */
+            justify-content: center;
+            
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) var(--color-bg-light);
+        }
+        
+        #suggestions-grid::-webkit-scrollbar { height: 8px; }
+        #suggestions-grid::-webkit-scrollbar-track { background: var(--color-bg-light); border-radius: 10px; }
+        #suggestions-grid::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 10px; }
+
+
+        .suggestion-item-link {
+            flex: 0 0 200px;
+            aspect-ratio: 16/9;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+            /* Nova Borda para as Sugestões */
+            border: 2px solid var(--color-bg-light);
+        }
+
+        .suggestion-item-link:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0, 168, 232, 0.2); }
+        .suggestion-item-img { width: 100%; height: 100%; object-fit: cover; }
+
+
+        #errorMessage {
+            color: #ff4d4d; background-color: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3);
+            padding: 15px; border-radius: var(--border-radius); margin-top: 20px; display: none;
+            text-align: center; max-width: 80%; animation: fadeIn 0.5s;
+        }
+        
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            #gridContainer { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+            .suggestion-item-link { flex: 0 0 150px; }
+            #main-header h1 { font-size: 2rem; }
+            .btn { padding: 10px 22px; font-size: 0.9rem; }
+            .view-wrapper { aspect-ratio: unset; height: 50vh; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="buttons">
-            <button onclick="showRandomMode()">Mostrar Vídeo Aleatório</button>
-            <button onclick="showGridMode()">Ver Todos os Vídeos</button>
+
+    <section id="file-loader-section">
+        <div id="file-drop-zone">
+            <input type="file" id="jsonFileInput" accept=".json">
+            <h2>Arraste e Solte seu JSON</h2>
+            <p>ou clique aqui para selecionar</p>
         </div>
-        <img id="thumbnail" src="" alt="Thumbnail do Vídeo">
-        <iframe id="videoPlayer" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+    </section>
+
+    <div id="gallery-container">
+        <header id="main-header">
+            <h1>Sua Galeria de Vídeos</h1>
+        </header>
+        <div class="controls">
+            <button class="btn back-btn" onclick="goBackToGrid()">❮ Voltar para Galeria</button>
+            <button class="btn" id="random-btn" onclick="showRandomMode()">Vídeo Aleatório</button>
+            <button class="btn" id="grid-btn" onclick="showGridMode()">Ver Todos</button>
+        </div>
+        
+        <div class="view-wrapper">
+            <img id="thumbnail" src="" alt="Thumbnail do Vídeo">
+            <iframe id="videoPlayer" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+        
         <div id="gridContainer"></div>
+        
+        <div id="suggestions-container">
+            <h2>Sugestões Aleatórias</h2>
+            <div class="suggestions-wrapper">
+                <div id="suggestions-grid"></div>
+            </div>
+        </div>
+        
         <div id="errorMessage"></div>
     </div>
 
     <script>
-        // Lista de pares de IDs (foto e vídeo)
-        const mediaList = [
-            { photoId: "1xMnl4cbEXgOie5VNpXcseaIoZAL9nMm4", videoId: "12-qd4UqiGnOdHMDcZY5S7ZmoKOCDB5w0" },
-            { photoId: "1b7nhdlRSTAP2C8py9RCjA2i26HheVVSx", videoId: "1FkbMNcaDpXO0oUInvAQLer1ix7H9bnY8" },
-            { photoId: "1GXPE4FAoZqF-DuOcpBILgHsdRkWLMcwp", videoId: "13UI0qG-4RZEoDEvAgXfAEmkNLclPm1ka" },
-            { photoId: "1mHobc6et-ycZ0tG-nAEZvN6vj2Fk7GaL", videoId: "1fIlWRER-UaPdy7zVL00aipjeih507Jo4" },
-            { photoId: "1MujXzI1_wGC1tiobDTDKkmBV_PEbpNLt", videoId: "1iHy-ztrtWKxK8eVKO2MYUFR-sJdczNZ9" },
-            { photoId: "1UImR4bDQAUXlf-pVVBaPvrBsRREp7sEz", videoId: "1dC01oJQl0sKTxxkhX9optJs7-52CkupR" },
-            { photoId: "1IYK966lecTrmkK1P1a6fhjnBRrwLJF5N", videoId: "1tKDODlo47S6TS3CPkVz2ob8BszrkTNZv" },
-            { photoId: "1PkWonwH1bOYnmoqva1HYYfLnh7xuVT9S", videoId: "1LePopjWKMl4yq6GUEMxf8kqiFs_UiYX0" },
-            { photoId: "13gJJ0uA0IIA-trKOYqEtWZBWR8WQWBOD", videoId: "1z_qVTONWeZ4sC6j7nvMD9PPFd4bsck4J" },
-            { photoId: "1BTne4H60zj6PKEtdFkQF6br29Pe4GOOj", videoId: "1arSH0pjAacIFyVFwUa_KL7jWyYCWlKFm" },
-            { photoId: "15wIXzuU8_M3DOYy4tFERBJRzJGrGrK_S", videoId: "15IAMB_GfIe6y_GruUqE5IDYjodmIaQVR" },
-            { photoId: "1HQCtKalntgl9L2yRAS14XuHpLrBjf-dN", videoId: "1SU167w-sCnseJwRxwFviEWQAhPbjmxJ4" },
-            { photoId: "1rLhtv4taqaHqLnA8YurX8cseazApqm1k", videoId: "1Qt_f4JpKlvEVAKEehn3DRgMM1aBuqQF3" },
-            { photoId: "1gNOdhirR7q0tZqc-4m2D1TCb3gXo6Kd0", videoId: "1ntSN2-cxZTP90cSBn6uopdkq7Bx12eyv" },
-            { photoId: "1E1EHBDDc9wAc53bYuGGdf_8nT-PKZ-v0", videoId: "1L-Qk8ptbwj5ZrbObyyITqIAVjjoQsuwQ" },
-            { photoId: "1xdXqzqJNAiv2ejsHepvr4ZrvObBSW6vb", videoId: "1CZ87Zt5eqg7Pgh7dXMW8DuCfMRMPVmO1" },
-            { photoId: "1wAvHTKwpNnQPdY26yv36xNSF3a4Qg1Wn", videoId: "16ShmTP1YOIOVR3BrnpKlV4z-yjoo5FTE" },
-            { photoId: "11g5vrEVKDbHZDG48Ff68fyJHM6Xl2tMb", videoId: "1OdurJTgLJegPF9eZSXGQT9dPndOoG0a5" },
-            { photoId: "1-GWGiE4WdEFCKHFbeVbNrk0nJ9mKGXue", videoId: "1rOfkv6kLH2LFTL5F0jv8BOsLcW6hjAMn" },
-            { photoId: "16-kTbEXw7S8dYXDTstycoImK6BWbED4X", videoId: "1Mpt2XYW4uiRhdCVHYVuwMkzEX4eqVPqP" },
-            { photoId: "1bRyWQmQMmHaBBJW08EjScENmQzfzTLp7", videoId: "1BLRK0emItViKx8NN45xQKgSCDGxmBWUJ" },
-            { photoId: "1GNYFnRSSSCxh2DL3Mr1bAQtxy53c6_Ax", videoId: "1s1ZH7QCus3WaP1Sh9PExhC5r6SngfiIf" },
-            { photoId: "1RwSXj79UKuuzdq23207z7mXzPWi4DeBO", videoId: "1v_mrMoeLD0D8e_KqHdC730TtZwCPLDRe" },
-            { photoId: "1_t0oUci3uRJl42uYxCMoGB-akkGS0jLc", videoId: "1fkQctXjVEaNiQ8Fqnr9pmfS6OU_7xeWW" },
-            { photoId: "1JhGTP9kaUok5KEvQB9vPs1ku5vm1JDAo", videoId: "1fZSCi2P3d6craxfRcByErxyngvWI9uAa" },
-            { photoId: "10M7jB5dKDgmi8xDT20IsPE6UpBLkX7fR", videoId: "1dLE8vcMnBOWrFxl57zxRj_CIpgdmDeec" },
-            { photoId: "1bcpmci3AzxNWxT7pjVgtXTSs8KrlE9Fm", videoId: "1wpAtYz-ii1Jw09mndJ7Kfns58NoXqToy" },
-            { photoId: "12wosC9YM7YEZndH1CWTokgPeUhPvC3y8", videoId: "18LzdoRpuPfnVq5ANmhE8SMBQYh3TyQOP" },
-            { photoId: "18BFw19F1IKY1DEd9yLb_QWmqKiQdtRKE", videoId: "1tJ9kdbj4_pw9pUWuqG-ABSqU6rM-6zWU" },
-            { photoId: "1SwBtH4qz0ExISeGoSarZ4rlupenOUxeD", videoId: "1VojqSOU6JmdQY7zluhB8-BCF5-J2j0Qx" },
-            { photoId: "1huDVDOIi36wKfoN2pZOAMKAksL9tGGhw", videoId: "1xvu_Th480WyfJT7x-8uwgWvXiKkQGEYf" },
-            { photoId: "1rXqfoHG6qv8zHOLI51kOVRHqsPyCRG0Y", videoId: "1ypEGtaHJLHxp_ZMLlS3-Ug0WnFnc0225" },
-            { photoId: "1wi5XmTcX7_3rclmzkSQvnpF7N3m2SYyq", videoId: "1JN6i0Q6Zn8Ihj8k2m1NkexmXEXeU-mg4" },
-            { photoId: "10E1SLe0UJBMYHyg81GElJHVdewjGZmVU", videoId: "1AoUjWpORx9pz4IMhHXqKfWlsLU70eugK" },
-            { photoId: "1aRUVFNHuauj1fVNX3KAUfYpnyrczjA8n", videoId: "1dk-lsRCAOT6fRP03if9ChWRDrUtSF8l-" },
-            { photoId: "1HaREFCwG05HSj_mZ1lUJAjQos9Nu9Gv5", videoId: "1FFRV-Jb8EcgCEio08oU6kCPnFQKYJLLy" },
-            { photoId: "17GtKNjiRzfploKL8NTDp19npHQbTQnCk", videoId: "1t8MDnU25IsTYc2PMdAkNr_LxytWzVPKm" },
-            { photoId: "1ReoRyUnXJ6bALHHdvckSVYhBnSCHqaqN", videoId: "1B_VFHtlcBDMZO9K3zVo5J8Vth7BTGZsM" },
-            { photoId: "1g1qzz6dqEld12WA6Btm5eSHPtvetBeFs", videoId: "1osPY88zs_5lH5cAGErm0sxUm5b0AohKv" },
-            { photoId: "1bEMl-PbKZqa2E1L0Mhmm3vyjCqopWVDg", videoId: "1vN7zIEN66M7UzbOpOSAUzlu7LWElDxvU" },
-            { photoId: "1MX8vklWm4LSkneytcZwezscgdvzOU5ap", videoId: "1aHuBhxycpsUrSeQhdA3Cn8cT9BK1UtkG" },
-            { photoId: "1sCzogHjBuxW032nK65vNSTTKf5kIbGdY", videoId: "1mhTqCDOqWRI-E0tVw_RGAPYV-NtFlykL" },
-            { photoId: "1SSV7lmrZ5ZbEr8gdwkGQUN54OqxM3Xj5", videoId: "1slzn9pHdOLOE8mi2DVi5gDD4hTZPwAGd" },
-            { photoId: "1uS42_7pBKqrhjIATjQDsZhDcjNpFmWD_", videoId: "10gfcjhFT4sh8lNQexV-_c1y3GT9ZkzFV" },
-            { photoId: "11-_QNQ6r4ZB3cM6kK0G8tJj2TbYl3Dif", videoId: "1Wz8SFVOM2ZC2ieCBGR3YhDhu1Y7hMWPG" },
-            { photoId: "1qrNFNMUNimURhhb7cJI9MXP8koSGM3yv", videoId: "1-Q-TUGQem0qNuv-WcUdaHh1qYdQoJ5Wp" },
-            { photoId: "1eqKlX5llezjn5hER9KjtC4lDUDS02Zny", videoId: "1FBogYIQ_QyVCK55pKckOLlZWz0iXKoOG" },
-            { photoId: "1r3t8pL5EWuVWDllJ9QdtOQ_JLpdLAN7y", videoId: "15VdYtZI-RN4n6jifYeBMyGi7zL6w-3ny" },
-            { photoId: "1v7bjBdEI4TvhRcnnA393i2IiT8TEFw87", videoId: "11NrkUZDqrKzRG1g5YjLdksmrNAoxeOQt" },
-            { photoId: "1YTewDbBfCOoaL0xLGwfpeqZevUNy_68T", videoId: "1t47_SGGVbwOgWEqTNaac690QFa0A9RpF" },
-            { photoId: "1KT_GKitGIsaYwN2oYmzKR33-uFbVIcis", videoId: "1MsF17hULaqAISIgZUgDYj5ol1r83Hd6L" },
-            { photoId: "1sNQq1ly3o_0WHruEJjRmfhLBxCY6xMtD", videoId: "1BLg-SbrOVZ4dLQcV2bH9jc3DWASF9aOL" },
-            { photoId: "1bgynr1_SceV6lqeeJ8kg0w1my8q7J1q_", videoId: "1Ks1ch8q3xw_SpoBOmeG1x6uvBlWd-CvB" },
-            { photoId: "1_N2np52Jpat_lQIhNg7ec6Furdy03EJt", videoId: "1EokWNtMORULMpvaAUS5g27VFoyuJWIZN" },
-            { photoId: "1FmPRaK1DLedCEJPY3bf_z38-4YcavNPt", videoId: "16g_L9u3pEdZM3ImN6prlNEjEw3CANhSb" },
-            { photoId: "15ESjIM7fKpe4Bs1DURQ_suAz1N10QEns", videoId: "1PocurWnQ16r-JxxT98dXJW3W9lqfaFWm" },
-            { photoId: "1ozHau9vxax2JzqY69uWMJIB_97LUS62D", videoId: "1HKNU3hYLIP2kHTMNmKUfejyGW3ezWkfZ" },
-            { photoId: "1GSJN0BnE3Yl0XU_k_0d8uw6v50Qx25nh", videoId: "1HrWT9ScmTrAXOGNJP5sCTQ44rJvi9zIM" },
-            { photoId: "1cB4s8DX38pk9_P6LdcCqpM7p6UUzHP4u", videoId: "1Wcq1gHkWxolOxF4cb8cBMx590RV0bCC2" },
-            { photoId: "1KoUYr24HKiXcdV8YuNfMqAiyJfy8w9Sx", videoId: "1IAZu28YFhhsQ3_e-B_UT7k0A2BtuTQEL" },
-            { photoId: "1S78NG0S-vT9_2jfUNFa3MrYXvqCSPtT1", videoId: "1rvvFoaweTniG8cq8SV5scs1-fzwwOi7o" },
-            { photoId: "1zD5EYbP6C17Ns2nktgBhzWkYs7oZAEJ4", videoId: "1YG2uOkvksmupjNg0JmVVNAT84SOFXRru" },
-            { photoId: "1Zhf079kT_wfeBnPqy4VaLFJ_BOIH60aI", videoId: "12Z3rfljNTq1JJmEA3MYIX9Vl0dQcHUHh" },
-            { photoId: "14ToSAzPvhdN8pIPF7Vq5FxOLD1bPvn6a", videoId: "1ajWsvgwaILU0K3Eujo4T0iARVdYV2Idq" },
-            { photoId: "1rcgU5vZV1hvDSLTdG-B2koSsUVLDND5k", videoId: "1yF6rucWiS8ng2P2Tuxs_ves9QmKPSTOK" },
-            { photoId: "1jaRkfwTOWcIGbGcIGidItLAmA-WETWVS", videoId: "1EkmrMR-0Ep2JY_ceMrCM53HjOaJAh2_F" },
-            { photoId: "1SppPSWbehZ5Xwb22O8tJJ5NXgEOiJzcW", videoId: "1z2VjRYYUzZISjhPcipwjHzI3TipAzFfK" },
-            { photoId: "1fpuB3nGJmP-4yD1oL-7fmpMbQVmGMkjF", videoId: "1lpO3Z6MvsxWHMfyYxxeZEZ32MvxdxX7f" },
-            { photoId: "1cArNrKueUG4CYlBSWTzgVUS_LmgOrSYv", videoId: "12Tr9VZEc7NmLlbWPnViSRTZDxXbiNY5Z" },
-            { photoId: "1vQ5iSKbUrVXAJbIRNuNHHtqhK2ZPkJNl", videoId: "1z5GO0huwfI79KM_nqZ71TI3a9Wpgr0KP" },
-            { photoId: "1yaqxaDPLFTM3-dB7_bNuEYU1GD_LdbwP", videoId: "1Ynq0kQ37O-OjZCmlboInjPIxoIZd0TlH" },
-            { photoId: "1ygT1LNwU3cRDXMY74k-fRpTKCenCdxbX", videoId: "1qFrV2vKiBH4HPNcnEOU1P_qLXIu_4KQ2" },
-            { photoId: "1fPUZhj9hxNZXdf4wrpXu6KONbzj5KwQl", videoId: "1VLnUqLwNsTOYk3gOmmnSA2zqXPXbnsmk" },
-            { photoId: "19aFaVWUJcXIePaO3P9OvdKAqn_yGB4-j", videoId: "1q2SsmJx3X_rNB5IoHlE2d1UZnWldEzUd" },
-            { photoId: "1WOG8r4A2bU0PBe6zWgbN7a75zkUP1VYB", videoId: "1OWFFwPu4HUNI4Hvett50YIUu6gMxfw97" },
-            { photoId: "1uG2Xs-0bWBULvc72uc9fYIEthUJ2BodF", videoId: "1jpyIMMO1QhCz0ed2QsF3YjchvZ8HjBYK" },
-            { photoId: "1WmSNc2oNj7Pf4jpX8gOgKOyMOytCitys", videoId: "1MOV2g7Q54ETJEz6ezljlKp3QSOYghKBs" },
-            { photoId: "1hj-8U6O2qNCkX1iJNMHKoE887PmF5pxa", videoId: "1hwUfMSn2TXiT7gBgFpMkxsrfR49y6PdY" },
-            { photoId: "1gPFx_nO_04esRRdwsbQc_R-J3Y0GIx01", videoId: "1RpuSJ_nd3X3nI6dR5908s9P7BCxdqXNt" },
-            { photoId: "1VEh0f4Tzufvc_6VDBWsM3Ktyq1PtHPHZ", videoId: "19VEjPI4Z600g2v61X8bPnQwvdj490pjr" },
-            { photoId: "1YkwoZ-JDtagGdITfOXQOaglh01VwqheJ", videoId: "1Z0QewF5yt_iMNkCfoIFaCbC_eCYV1iD7" },
-            { photoId: "1juShuB0pb6ICitdDpWeNeV8uffUcuDyg", videoId: "1BsoPk8TtyqCg4ybovAL4_yeLeYqhQyaD" },
-            { photoId: "1HX6-duh9JwTdeznQVVlEFmT1y2TPN_Tp", videoId: "1OgQ-otK4wU2ZFA4MyQTBHWYBcX8QvPTp" },
-            { photoId: "1xaKf6ScrIegiLfqKDCmoGSlRcaOfeGRC", videoId: "1v71sLInkz6S2NEsgoOtpLtOLoixXTQvv" },
-            { photoId: "1d4CXzAF2W7-s_jC03b8UZQtp98Sd_JvK", videoId: "1GnMEqt4dXPC87H9SKIdIE3957TPVj7q9" },
-            { photoId: "1_LddAAX9qemN65nX7wNUmxc0Ip54-R7M", videoId: "1YsUbMOuh2CnpxWAtlyg0kOVgZvmsNDcQ" },
-            { photoId: "1MB7v7zMwRrdU7QrDFJFJ0a_cXaQGzf7S", videoId: "115u7Izz9GPXLmMOk6DjY7Obvq5yypRFN" },
-            { photoId: "1KOkw5qYY_FLoACR6h3ckWPHK_kIUhVpE", videoId: "1ZArsHyIGpImgiQOgYVpnCyDS-btuXOsU" },
-            { photoId: "1MQhSOr0tZaxzyNF6-ppwFXkQGck21_tI", videoId: "1IvrN_U_qN-bxf-6AuZgOU63K0A6NWzz5" },
-            { photoId: "14duYIr_ChDJgulC89RwqpSVO2Aeo7Oaq", videoId: "1luduWqSOLwDPdGzuuXmQEUC6JgzXYJoK" },
-            { photoId: "1gRzAQ-f7ZlhKjLZKAK3et5sVjqSzGi6-", videoId: "1g0GWd9wOOWPAsqWW3smk190qMe3Wap-U" },
-            { photoId: "1g-mXOjfPJ6yE-7Y6kC4A1h3keF9xkkHV", videoId: "12q0p3D5VMcV3I0KqdUdqwPlajetOtTnb" },
-            { photoId: "15G3Li87aOdUU0Xxhzml8IspEmirfc1zq", videoId: "1RdFeciajbWAIq-o5K9hS5PFJWeVjH08n" },
-            { photoId: "1Ycjqjfy0eHEXHJTncY4E4XPnS79VVK49", videoId: "1iIInciMdlViPP2cvyplZqbMYZFZ3X7ng" },
-            { photoId: "1cAzP5U7oz2aEIc292kmfDS3QLGpIMNd0", videoId: "1yqiCj79F6xTGPzbD5od_6IeLM8WIoAza" },
-            { photoId: "1OpxcY1GUOqOILNsWjpOwgT0piFpCu0r_", videoId: "1rEoUpJNrAmMfaBnXwG9Mfjtfst1y9qrN" },
-            { photoId: "1qdKrhRiArOW0ajdAY8il-cZtppCofWLS", videoId: "1npWJySWLK3GfijsUkvaaWyUy-ZtJYZyY" },
-            { photoId: "10HFUx6xC1AyyLfgLYueBhRsKdONuRB4I", videoId: "16hFTojlRpm910U9UeTXmRyudXW-OP5PX" },
-            { photoId: "1dQ6U_8cgccoD6sH4Q_zy-cgYGG9uE8xw", videoId: "1Q0VZJLff2y1XQIjUinK_P9KBacPijUvP" },
-            { photoId: "1f-DQxheRpSDG7SK7WhbdYuuuo--INeVn", videoId: "1ShN25Q2P-LErqAUd-ED-mrimLEyZUTna" },
-            { photoId: "1WsGYXd53_w9HpTW4R5qBTDmS2fvQ4ofF", videoId: "1YZDETbJinL87m9TIef5np4ehOyvQqWnS" },
-            { photoId: "1Xn5WyiE0ZvkkLwv6usB3veMMUIjmm6eH", videoId: "1Q-CWz5_kgGnYJW-oW86bMVlrkQ9vsZNU" },
-            { photoId: "1okOvJfQ0eDQcBdG8CC2MPTAXcrwJiiNI", videoId: "1LmMev4Vw5Hf5jzyvqhf7LxVbqjixexkE" },
-            { photoId: "1KNHgUnLfyGuur1zShvtjT31-txSF2CPN", videoId: "147Wi9bQOACJrELn0r82D9rrsc7b4ZWiD" },
-            { photoId: "1HvJ1nW_i81-Krqtox_7CKm75hzg10qZ-", videoId: "1xeDmXIxd-x1Ue3fMc-u__nox0M6cWq9q" },
-            { photoId: "1zrCZ-ZAbDN6VIM7toUMAzzmi8xC1TlJM", videoId: "1bat1LMg_2NIhqv1iXoA6Jez_LnsRRbLE" },
-            { photoId: "1yje5R73ZZPK1x4xKd6DZjno-lFvj83aq", videoId: "1q7Q6AAiYdL1_xGigo4xGeqzC3hGAxBi0" },
-            { photoId: "1Jq3uMwcLyp4b-jvYJXbUcQYbjMrEUty8", videoId: "1K383oIzPtX4RL4jNv3bVXKqTmDW0FTK7" },
-            { photoId: "1GJrg-BLQtUOGp4qcyo1GPmuWbp5ysO6b", videoId: "1sS1JJ5htARl6UFGqtIN_wLnoKYZVsIyH" },
-            { photoId: "102sSFu2kJXIwHjS0bcc_4ug87Vm4ZTj3", videoId: "1j4XFXhDlGATSZI3Om0x-uc9zROOD4UVq" },
-            { photoId: "1q6J1088ELc4szJfMrZqxiIIRlo6e7LA3", videoId: "1B2F5JN9ySnmWAjk35Ukn8yP5aLOwjvr4" },
-            { photoId: "1c6B0lm0NUnCYsTup85bOeEfSK9SXWBJA", videoId: "18o8-gtAgjvHdULo4wusv88fw0pm_0B7w" },
-            { photoId: "1qOUQk79xWpKAjbnFiwqJUwf4pRAMNxKl", videoId: "1eEkCNtYG6w-PfJ4kYLj9wq-sjRdDTzTO" },
-            { photoId: "14tdy7N4-xgJwaJql0z-2u1ID6wqhKyuT", videoId: "1_LXBE0uXIFWzrW5EBFA81GIKhMPcQ1Yj" },
-            { photoId: "18R4EDKEZTa98orvbtX5ut_q3dTla5wtp", videoId: "15GnKY2EtegiAban7bOjEVYRt-xXyWxZi" },
-            { photoId: "16vOgykIpWu3LUwEYhmFcbkour7qiIxLR", videoId: "12oMbONaylBo-wz0wmDZsbwP7WLgHWnzh" },
-            { photoId: "1sxxSOg5lqox8WSKQR7MSNWEnq-eutgMm", videoId: "19tH34qlR3hv9sSSzUxl6PA0ICD3mZdjW" },
-            { photoId: "1ogFESBA8MiwmhtYbD9Gbm9tuglqzmdJB", videoId: "12IQaPErDdBKAhkpfBy0rtFV3KBSxU0nL" },
-            { photoId: "1aBOa-_0ArjAGsXJebAI5gIMAcU6WeIgx", videoId: "1_5W4SR1A_Xa0N36wst4N-kdZosdJHDYD" },
-            { photoId: "1y8mXrIyehPUmdrlkIY69p_Lu47xfSl7Q", videoId: "1aauykmMPZE5EB2ety8OAbsBE1QqIMaKL" },
-            { photoId: "1eVjOU_ebpAwKFLFcnEnGDeJtQhQHi3p6", videoId: "1TIFCzbPwxpfr3k7uiGEiwGVNeiBIHvs1" },
-            { photoId: "170tWYoeKUDg00pdCo7OlnHFeUnUOURQU", videoId: "1k8L_2WFu3Z2YXsA87dyTKGY-Vsx_RKCb" },
-            { photoId: "1eOdyOy4EpPvHUzYqb0aVy8wg94ACdQuw", videoId: "1pnnOERVb_PlR3KQBNn9F5ClYWoOiBpIz" },
-            { photoId: "15rdPYHW67YjeA0_f8R4VA76O2rJPhfbw", videoId: "1j9yAZkjBAdBqLTh5aHcWkgyutJMtyZN_" },
-            { photoId: "1NNJNWcMy7Iv5k3mPnrvlwgk7d2nkDC9C", videoId: "1EcTVo0KO5jA66zZ028Fth3HXEbNvNrHI" },
-            { photoId: "1VeOR8WOMY4I2KZxD_85MZNTKRj--JGua", videoId: "1Lcr-F8fN6AHIrEiTZ8AGASB2sNhlxOn1" },
-            { photoId: "1BxfQ-bao47zGm6dcrBFlKDeVpLZWpjwF", videoId: "1pdq7L_vWEbS-zfgE_RZElAEQu0tSHFQU" },
-            { photoId: "1rlvJd8hMUb4fuHV-srOmXW61l9giDHpW", videoId: "1OJKXw5CVjQzZfR5T8nqs6K0VS26UGvDT" },
-            { photoId: "12-O9MtM0zS9WdcX-fSkU6OaDcWNITg3k", videoId: "1UR2J41fxo1VL28C_AWSnvXFqzJnMdmQL" },
-            { photoId: "1FwxSPoZbGoG8OQqtCCPdJsOJ4RxmcDQi", videoId: "1foawThNl6QB_8ovukzBXJYirJvR0AjWu" },
-            { photoId: "1Z3aBQepD-BfMWz7ybXwAnu0SAxXCN5cN", videoId: "1h8gAlRjHFNX5jKptyiDs9Z1H77zy95G8" },
-            { photoId: "1y9-tZna8TYRf-cLVMa-SMAaL0JrycCoG", videoId: "1qOXh5T2hc9uqZ6VOPDVZvzB8C-fkYQHq" },
-            { photoId: "1u8brmwZJi4yG1ORsxtiYF0BLkEWDJxGi", videoId: "10hmzth-NbO1bQZn6vUNEo403oI6Kyddm" },
-            { photoId: "12KQ1ryUwWUIsPs6XrxoVMEI3IOKmaI5n", videoId: "1LmEShVSdEevBx-ojIE1SJQxqqtJRG7d1" },
-            { photoId: "1375kNMwaf7otA4a9gL9oOLd_O95ILGZF", videoId: "1xooLDVSoAErxvo-CGSJIYRq4WtlEuQSz" },
-            { photoId: "1ng7IczP4wD0dL9nQeTrjwwjISvWEP5V7", videoId: "19lxzt2d2wS8ooWGPQpgXgllej-eUS2xS" },
-            { photoId: "11WorHeGT83x5vrtRGUfexGnik9_oYYgS", videoId: "1e8w0bhoKAeFPojaUFgsBjA6ZslNS0Hnf" },
-            { photoId: "1KtSsVLMFJ2pY2G2yZQGpGeRIkMWjACes", videoId: "1NvACUS_IQCaTvbtpnv_ufh5x84Qhobx8" },
-            { photoId: "18PA-XAX1GNYspbI10ZNJ6Wj2Hgj-LwJz", videoId: "1AL-hy7wSHNr2HoKINSIUddStqE-Mx3Bl" },
-            { photoId: "1HQXXNL_3p24gAsOlQyF5Zzt0LWRvwkNC", videoId: "1voT6UIiUSx6ZZZg1Urorji7nAq8aImM2" },
-            { photoId: "1qHCqKu0uRp7jv6tHt8QI5smvGLXNYAVE", videoId: "1dsbkEBYvG-kBi6PYpUFx4pwT5rAY-5Ag" },
-            { photoId: "1WUEArj-X-aMAKnebpM_X2dEiLI2Jl21Y", videoId: "1-NOrGa1mtQ9YyTmY3oXL1-elybi410wQ" },
-            { photoId: "1hVxP2VRG-ddh9yKcjOdO7J7Kz03NM5Ny", videoId: "1-HgRrWjEvCvWz-b77q8HkobSuvdgTsL7" },
-            { photoId: "1cZi83JRJaXlTDTyZ-Jrp6ZgoAJFXlu5s", videoId: "1g8mvqEXH2gkMrQiJ9KgAD8rXBBVEUw2M" },
-            { photoId: "1Z4QhTZdWi5_DIxdVUbS2f8ilch-aRdqn", videoId: "1vu46ge-Jp9PCQzg6nuQZySXqFnO3jpCz" },
-            { photoId: "17zAllngv8vN3abQYZvNBmt7mRRx5btxF", videoId: "1WeAZIU-ZK7DNbIzIszM7s97AO95TobPr" },
-            { photoId: "1vklilm3x4ljtkXeDjwGq5WjTI7fMFuz4", videoId: "12tS4wW_S85b78jsXMSS4LrqhNzV8UVaM" },
-            { photoId: "10MLmIriaLraEEdao5rmSoqIq_XoZ4_sH", videoId: "1iI2zyP5eVWjhl5rVgOPRyA_amspLi3KE" },
-            { photoId: "16t_0uFWoTN2GVR6nHCcDUyRRe6JmWF56", videoId: "1Oz60Y2HV0A1AtF92AphG9Ywjvhld7HxP" },
-            { photoId: "1e6qqp1Ayex9LKYzlbeHTz9H2uAc49ag3", videoId: "1gFg2rF6rRLJhb6MMFL6_6h3dXSZnWEbB" },
-            { photoId: "1d7cmmpIA0qwGlbIbPxYjuu0N78aT43PB", videoId: "16Z2TQEGr4XR_18HpgQh9Ed7y4GtAM-h2" },
-            { photoId: "1H6KqUOh6L4sw6aAa811hfMEd55U70yVT", videoId: "1i8BocYxAClQbhJHnJ9r2QymklLgXz-eq" },
-            { photoId: "1rcE7x-dg5gI6tSvQzLhi6lz3cPfZ2UHo", videoId: "1apcaSfKzD5MlriW9taqRpvQ_5p26tTaw" },
-            { photoId: "1vpzybgx-eGhcmkEpCWnMlLA8ScCYs7Gt", videoId: "1TW106OaG4SEjsaKMXAB_079xH2kvTPls" },
-            { photoId: "1dTjB6I4uTcomTQkiWLTyWWwI9CIFNshH", videoId: "1BJhcmQpsGq0n1QUWP6usILzAhtm4g46o" },
-            { photoId: "1pwvZ6d2Nfx9tJR1jEwGWsuToiK5b3zFH", videoId: "1Pszx6HOkW1qHtL18KOozavbZG4slbr3R" },
-            { photoId: "1TcZ0tGKGIOENt4WSfTbkd1Mii0BSxQzx", videoId: "1kWU-oZtfh_AoTmqNV7qyp78sU97wDv9K" },
-            { photoId: "18WobWtX_-Fu87jedwTaOoOABzwJ5SbSX", videoId: "1kdFrsCYeSXdwwuZIPb1XbWFM3QRZsJ7w" },
-            { photoId: "1kDm2RkRd7mL9JE16g9HpZJj4dHJXgOhV", videoId: "1wJWeKeQW0vlflBykkiE13bUIHzloHB-Z" },
-            { photoId: "1qmd3qa6XDpvHOAs9EEPDGRSziBgq29aR", videoId: "1UgqnhPQry3d74wMIytSiiLP3f91AfO15" },
-            { photoId: "1zozjviRCHUote8aWRyXTrdeqIGefZLCd", videoId: "1PY8HI0mQGNEMR9JiFE7Vcy9mtPaAjkpX" },
-            { photoId: "18nKZ0lIDJ3vARQ3mI7Fve2T7cTYKE4Rm", videoId: "1OVGWK8LodggY2D4nF8k4pUW15VTk41lK" },
-            { photoId: "16-GYxieAsXiMDeLPyG6Q4bJXqvxvO0PW", videoId: "1_sSwdEHGNNrWGV0Hr7V-8IrUV-Wmj6-j" },
-            { photoId: "1BLR0nsaERKv-EOPoey8wn-6Z8ydi-yE8", videoId: "1JxyvI4Sxm1hls7-1I2nIYP2pz9JocShR" },
-            { photoId: "1X9BwIPfzm6401Jp6DyyM54YiWtJCU4n3", videoId: "1l0selmPRLu0wwNcltl9pSGSklvqCZ6Q9" },
-            { photoId: "19TuKHEKYxjqEb1mE57IEypMUaLxM6jpx", videoId: "1fwTIwzDwxmhjmF87M0Ho0dMude5rA2Qv" },
-            { photoId: "11c69Eaigw4eTpzfC9j0vsDBd58c3gya7", videoId: "1xKwsTYlCZXvR5DDqvGoVgifZbcPrJaUQ" },
-            { photoId: "1RTjdYBLQR-hy2HpADrZTMEfVshYIyfe2", videoId: "1MqA_aLbRuykzan8vJ6goseJrDZ-A7eEL" },
-            { photoId: "19Eu4uUHeNBQLAvo3eaUNM_hhzIjCuznB", videoId: "1VzvZYXtURK-MYAc0Il2YDlKeG5nfnUWY" },
-            { photoId: "1yqQYUFe8OmIrCdB5oZzdHeWohNv_PATp", videoId: "1Q7QhrSjePswF7gNLtYDqoqQscvYH7FB7" },
-            { photoId: "1Nh3VRYnhwcsnNh4pHSEBqDpx5zwkADev", videoId: "1UAlBQzTYV50wAq5qjFCdQ4lZEo0vvD7s" },
-            { photoId: "1ljqGC_wAeUeZWSTshhRDNTpHyFLvROTc", videoId: "1Q8GCmx8V3JRHoPVbXI43vgFHPRmGn_lU" },
-            { photoId: "1EqkxjVNwl83RWFhbH55yZFRvdAafeKmq", videoId: "1lvzQD8-5-wx_qHbCOWw6wJ2OEBkAH2N2" },
-            { photoId: "1m_jkTx7L5J4sYj3p6zAJol5XgV9mrbxe", videoId: "1tsCG6ZJlFp1an8qEOTf4rqIqjzry8Fxo" },
-            { photoId: "1ZkqdXSjPSubPals-ybOJdPE48Gf4edDw", videoId: "1Ar-48r1OOuWzcvwnERUOrH39EGYj-4VH" },
-            { photoId: "1BQr-DF5RCDBZw1Fjym6RCOUYKbPVgbZ_", videoId: "1J-Vv7PqN4MXPQlZipzyFxn7fjt_Js4am" },
-            { photoId: "1xRlsFBOu1wu6a9pAju8Fc1OH0rEm1ZND", videoId: "1cCAaQ2ppiuZTLQDO6iHvnrtS0T0ZST1o" },
-            { photoId: "1KB04Gnt_SOVezMQR2Uq4diZzejwL1sKC", videoId: "1PU8mA68yErZ3qG4R34FGYLfsesQSTvpx" },
-            { photoId: "1vAVTCuD3Kn9MjAy7aAz2mESownE7e9NB", videoId: "1NZ165_hbGXHk3chKGAwae0jsic3HawaM" },
-            { photoId: "1WNTR1yGQqxq0UY6EO5mdVOy7fqqlpBu1", videoId: "1zKs8iu70icmF1YqKkuqqzxZ_1-4Vp9SZ" },
-            { photoId: "1SiwYmHds9_szlzkuwDOQffuYDn81aOCZ", videoId: "1-w-9vYFbfuEWyW9Zp7wmt-pr47LC0NNh" },
-            { photoId: "1-FNlnl7ptfJGjJ5i2MyuF_ji4tHjFF4Y", videoId: "1-O9Vy4Kq-M_rzZWlUC7YWNEtjmZCtJ79" },
-            { photoId: "14Ii9zhm3KyyZ35jZchnPH9whtnFT-fGp", videoId: "1RSS22IwlFE_yqges5h3O-zax07HtE_OX" },
-            { photoId: "1W6u_Mlcidfe--kiNCQLOSIBHjkW8Pu6w", videoId: "1GS23mLM60kOxXG519I_bSCY_4aCTa9v9" },
-            { photoId: "10xj9VuhZ6dZIShV-5UaRAXinX5qS0InZ", videoId: "1wE1B1-09XU05e5eIV6M5Wp-F_zbMkAXQ" },
-            { photoId: "17pF_MBuKpZgg7-pcaFJHbfvBydvhiBR3", videoId: "1e2R8SG--GmJl7J_HyoScuJ2TGayT36nc" },
-            { photoId: "1FG_6m5nvsyMDxWmVfbGhszsiJoxpihZO", videoId: "1-rUFPW3xg8i-9FLSxtaziWAWsTDyysno" },
-            { photoId: "1AjlODCatiVw6NYws0k492BoS-CmF6nxz", videoId: "1aRpybQBDRp84gp8Lecsh-Ii4Kmii6N8V" },
-            { photoId: "11smzp-f5NHYzP9W0xUHRRTHqTAQHrvCE", videoId: "1Yvjc7XenqTmZ0ECR19gz_hazLorJxNJA" },
-            { photoId: "1E5FHBfqbfY-S3w2bZ2PesKq1JwpWc7Uf", videoId: "1Gb4xMky25HpMCAhur3rszybJMlMAD19k" },
-            { photoId: "1T9X0NBuhzYjn4m0Grj_0ozaIQHwnrpNc", videoId: "1I6yMzjdehxUOxb60IooURF0SCsoVvuG0" },
-            { photoId: "1GaD6PppmbzT-xGcTX4RjOYIdM_hbHmJa", videoId: "180pfK8PYSO3DwCD-Xvr1npTCYMXHqjUH" },
-            { photoId: "1mxNbyDPVQEfW3eNrmvtP0KJ0fZUqQL3x", videoId: "1uZyvZwFD3VZtZTWo7pX_HpGvro5lKmWq" },
-            { photoId: "1Arditybbs1SKSNXtGVKxlEWkTFJfUYhB", videoId: "1uUYOM08rh_JKWVb4Q35urm56YTGvyVOl" },
-            { photoId: "1ijUXB4oMgiUZbITyrhL4yQ71ttjURdXD", videoId: "1-tpLaYLDsEtFTZUAqi9wOqREMY38T5aa" },
-            { photoId: "1SM6Kfr8aILY53MKlBwM8FPYxsSYLllo8", videoId: "10P2J8-dNyUdczqOOdQfm7-PXI0TnkaDE" },
-            { photoId: "11B5LorTnWn3lNLrfv5WXZ4VgGqN_l8FP", videoId: "1v19Tgdlj48p_Ptd-XUd0Hg--gw-laY4x" },
-            { photoId: "1qjLy9xpOuF-nTCGyaQPVA3VzB8MZHa89", videoId: "1bGV1a7lArP27TrrkzL0mm7llZZfpn1qg" },
-            { photoId: "1vqqSX6HDBqxwHOurZcM-hCvfN7k5wTLv", videoId: "1ug6XfIXzUsvQpqFHGY9R3wkKsJtmztGn" },
-            { photoId: "1EUJwF4_AN7Q_MIk96jQug19JefFgz7sb", videoId: "1KzeAoQJVyZP13z8Ntg_m0QVEJBdPOA6V" },
-            { photoId: "11HReF4vzuxSw-OoemT1OIHb3Qn89ar9o", videoId: "1w0Q4iI4I-h56zCk2zC8xn_4Zlezp87-q" },
-            { photoId: "1furRF36Pg-D5LXDju0tSMZzExL_0LyAy", videoId: "1YoaDI_jJWD5RReLsFtma5R8hPU_RzDVH" },
-            { photoId: "197IerI_11I_WWCg4Qq_vyqVy0wBiQFQK", videoId: "1Mq_auYGuUE16KS1sVztapn-Q3vgKY2r1" },
-            { photoId: "1g5fc05Z2F485J2sHXGVwELTGL_wWgoA8", videoId: "1bKdVvpXAjToEYlqLGNb71nVPImZp3L4m" },
-            { photoId: "1Ewn8ecCoR_rC_HnpXfgaOYnkGWrWpASc", videoId: "16GPuMG6KHOUyN2XPkkn3mKpAC_ZVcX_T" },
-            { photoId: "1DqBd2RpER-gNtNngOeph6kiA3DPvPxUd", videoId: "1jLOkMIDsCOe5EVCl_Gh8eoEbxGUSnQf0" },
-            { photoId: "1oi-uz5Vz217Lol5EUNwIh-HRoVDldcX6", videoId: "1X2Dt5PO9BGOETVWMzVBCW8XQv6KA7dko" },
-            { photoId: "1fhjPpnoFLFrMyExhXxl5VNwyx7QDSgyD", videoId: "1Bmfvbd0IV1jfNMK1m5HQXbhvfTmh4qb0" },
-            { photoId: "1P1tBooUR-VPX3_6VRh04QLeyDlJ6OX4C", videoId: "1neime1RapGH1gkKBBMVMky8X_9QeXeD2" },
-            { photoId: "18oTkTM4ndhi-L8vlT6a8RM1ZrTnpT9VN", videoId: "10OYQQYzvCLpdbHX9mr03yUSeiH2wdqI4" },
-            { photoId: "1zr_8NsShybZ-GAM6njsN7LfHfLQ8Hrrp", videoId: "1eUVRBewO93AKGNVCDFokHp1-Q3i4vt4b" },
-            { photoId: "1PQ2oVGE3r3_0rjJ-y4Jo0WHXdW68z-fj", videoId: "1yRvEI8Q5S6gbDl56h69zu03mAhsdVX-K" },
-            { photoId: "1wCRCak5SExJ8i36ux5q4hFCbhUgrAbkh", videoId: "1oNQA5XqwmFrl09smMyXkhXxqF7NUqRDq" },
-            { photoId: "1V-be-lmgGUUltzQQnD_hGjyswoG5W9KQ", videoId: "17m1XWNnps7ac_kXnlFjEwig1wKE5QTaQ" },
-            { photoId: "13EUp1Mqw_csPeg7En-WXxxSz9zmxeIj4", videoId: "17dzIgT4LJ3R2mt5tAcw-903rVGvRUfk-" },
-            { photoId: "1Bu4pQylHNeREM3lbGGZg85jJ8mkJugGR", videoId: "1mT_q8uIZ0vSE_krWxcap1cANx9fa0Cmm" },
-            { photoId: "1w4yZJfGl6fpaL8NpPQlJ70EFqGnTki00", videoId: "1u1jQ-n0ocTUP6wEw4nHjyF_HgDs44YhY" },
-            { photoId: "1OXRnjWpZjQQUbZom8pygiWwrghOlGpQh", videoId: "1QB-pS_l4CBCitzOUb61TQ802PIsDTq66" },
-            { photoId: "1LJmvPyrRZHNK-7ObnHVujHe6dqFjEGW7", videoId: "1zuOwitXbHKGZsb-MqBccaFR9nvESSuPW" },
-            { photoId: "1vSXXL8BsbreejaOaKHc1yEg079pSwogb", videoId: "1YI978zG9LQvvZOtsIQ-iNodEy16qU6Hl" },
-            { photoId: "119FY6w7unbUHgnzipWN3KDGmf0TopgG6", videoId: "1wWt6ruBtVgI1X2bP3QWQWy9eMaSJsZe7" },
-            { photoId: "17ahoWylsAdpmeqV11nDyaR1TKiSSEAzW", videoId: "1i_I6DXYEBxz61BP_w3dxRLeOTriJDR3M" },
-            { photoId: "1YIk6zHzeD2sTgmGKCmgHzVNmCgdF-1Db", videoId: "1LVXOybKuOa1_ks1MLeu_atCvnKqdflAU" },
-            { photoId: "1dyuPhLTTKnAZIy6ntD8PrF2WJxyq0CuV", videoId: "1PYGx1NLKMZjl1ROHI6nf5bNt-e8DzQvC" },
-            { photoId: "1BjRHA6987Q_MY3BgM1Dm-60RqWjVwWZN", videoId: "1-0SrsABPZD0u9cC4H9QLo0nVGAnK9ArY" },
-            { photoId: "1hmvgx2BxR8ERcUmWwilNaXFZFoaa-qK-", videoId: "1k_bYtuoxuOmr17EsrS0lSyzltJtEO_YR" },
-            { photoId: "11UvDQNlMcjfGqnw3Y6VrH-OvjjeaTLEI", videoId: "1gR3V2xJZ2XtCwwmc9iAlrI-tYZ3MSv1U" },
-            { photoId: "1EM4x1A3e01YlcvNqGwrU-ROLIZ_BudAI", videoId: "1ICAN1vfdebHh8Un9IJl3HvE2J1gP9-z5" },
-            { photoId: "1NEfMIc53bmLmmTT7xUOlViCrrzMz_T-y", videoId: "1PIL9WQ440LzdQDbuBldiARCaI9U_QP5U" },
-            { photoId: "1IFgIeidkXhZTEVQOMu6KHGaBrKXVYLkG", videoId: "1SK9gclDZFR9E2QOdOyG84ZlCu1NQhHaZ" },
-            { photoId: "1ar-02zFYa168vrSqXxU8IcsL7hz2ov2c", videoId: "1EKnl7_iWDxSoMQW2vd0qKBBk5Uyg9NSB" },
-            { photoId: "1Rapibq-avwXZ_6l0f_GExzZVmH1KhvAp", videoId: "1XkkSzifei8QoLCrIqIPysCD_FJ5gMwEQ" },
-            { photoId: "1136dAqug-_9-W5oh0L7-pa3EhH5S4g7o", videoId: "1gNVI_Z1RKVX8PXcWCQhlUP44vpK8xNEg" },
-            { photoId: "1ni5a48x9W3ZY8CgGz2XCDk6MacPIl_Q7", videoId: "1qcXCLZBRHShF2EVOPBjBKrJTKn1VidL1" },
-            { photoId: "1cImSJsqtKglvz7Dl5KP4jbDSxmNxrR9P", videoId: "1qNhWfD7zax2bGmCcm16jcfOeaDFyYNut" },
-            { photoId: "15OZIwqKBGOX7t99-Y5bhRqjHB3tr_cY0", videoId: "1fXzz_MUpwRsVM_ErLpgvcBPb0O7v1PeJ" },
-            { photoId: "1vN2fDKeowppM4IFugL2xvpUcIoqDcSWe", videoId: "13YhIid-I5uNgaDWftZwT9x5mDGLZ1lHh" },
-            { photoId: "1SmuCMxsB4yOStlWG9xh8UuCfQZ_BvXoY", videoId: "1YGp102Ipy_h2n25B_-SIf7UE-LCMAlDl" },
-            { photoId: "1FDhmt9U10bR0z4sIpBq2oFDHs1pMO-xb", videoId: "1AqG8v_78YSsX91RGPkWydvP7xf_ZEv3z" },
-            { photoId: "1GD95z95BugrRGcJog23zv9DCbjfHhcsI", videoId: "1NDz8-bBrJQ9trdXlr56wWUhxmgjpUHh7" },
-            { photoId: "1UR21wqAwO_OANNi_ZXKy8Op1AdcztjcQ", videoId: "1BAyS5a05wORACfpqvqcI32lBKj6DCruf" },
-            { photoId: "1jvy4EbME_jnQ1g0Bt28Vou48sEMTy9jh", videoId: "1roH2iXaqYMZKYkKcfri7EbRTy1IbmFV5" },
-            { photoId: "1v0OMOkScByFVNMZAm-oA4JpnM33aTovL", videoId: "1daxU6ReYI5oqAIAACD1D6aYOJNtcphdD" },
-            { photoId: "1vSZGDX64RuXpppP2t5MkJ8hq-fCfCgwX", videoId: "1YWnQJ2YURXW6i1HB-z2s1pZLlX0gsG5c" },
-            { photoId: "19yYqb5n2vjmS7PCS70UeVbBD_BkY3Hp3", videoId: "1GL-f25bdUWklAmVVIrmGOA4pvL3GcbWo" },
-            { photoId: "1Bn0MpLuuo8F5STnZicLpA6CUoZf17F7N", videoId: "1mM_sxmMbKDNoTz6CAj_lmYz1gqqmbyTh" },
-            { photoId: "16LLtted3uJ6OxazKBgNE5Wr7vMLhVeEI", videoId: "1QnGHhKAF4FxvAX2UOWIRZ28YRww4V0W3" },
-            { photoId: "1yV7zo9BOH41__SdqPiYraZvpkqjGaD2s", videoId: "1xPPvosYBk1V2imjqi3fvjCUY9k2Fnfqz" },
-            { photoId: "1ZG_ddnO6IBTeRi66AcQZ6KrWeuza-IV4", videoId: "15NTIx5Gnm7qe_U9k8x9EpB2PlFfG0slP" },
-            { photoId: "16I2o3N9_vr3aRfwi3F84AI-WgMxhJsEJ", videoId: "1HC7jOSBinFI9ts_f8dgnOa3cCZszJfnA" },
-            { photoId: "15gkVxKIli0ZZk624Wt9298KX0QybtUvT", videoId: "1E7ZZT5xR6Fyp9W2eveU1zTlQhQyjl2gG" },
-            { photoId: "10n2bNNtBGKFBbYkd6y_tc_Z9wKOJtysd", videoId: "1aYLCiowZpULLQeiVFjLj0fD6WUeGWee_" },
-            { photoId: "1tg6eudj35nauWQ_e6klJesCCnsPG75pd", videoId: "1Sc5nvPaJsaftJGdNCPWEdQy24Jb02fhW" },
-            { photoId: "1f8e_Y76Pr0wCd0F1ShwXO17gTUs3qCXf", videoId: "1E1gUfeCyFeha8x_flGC46qYyrqmkiOm7" },
-            { photoId: "1rvlgi1fzwIMVyr6kGlZx4hQnJ5Wkd21M", videoId: "1KBVK4Kqa0SjLMJzJYyP2TCg-qbPkx39S" },
-            { photoId: "1dsXFm40eLvNVlvcUrggW-RiqZz1Mo18s", videoId: "103My2NdLLyoEfLYBDxlfEr34PPDd1tmV" },
-            { photoId: "1VM7-g5hf0m6Mx9NCUdOQ1cOI8PZGpfIc", videoId: "1DCb7Bs9RRqnxLAxzuJSOQs4jCXb-sT_n" },
-            { photoId: "18IkG0XvF2DsSlRfajiy7unn_qkxOzBK1", videoId: "1U6udL_jKv7DDfaDARnLGA-EyyA7PwlBE" },
-            { photoId: "1GrflW940T_kDBS47gyU9I-eQlNBUS5Gi", videoId: "1o3JQODBRHoYZNhCD0aciUv7NcM5oJJhL" },
-            { photoId: "1-D1zSuZHGYU32nWZekDOIy_bd7yl5BxX", videoId: "1QSTQ2gkoG3C2BT8bvd50Ww-XsvANrHSJ" },
-            { photoId: "1THM1XYcm-mumRMqSVIo6gTlG4wDr4Gmr", videoId: "1fNMucH0Wh0fw4ok9Y8zrRZd6a04sHI5_" },
-            { photoId: "1LvHxT-E2sGc3kwsYLm2kZlBxkWfhqpYR", videoId: "1ClEhtu69IsFGWkbQ50CrWhfPaUK3CR1L" },
-            { photoId: "1qQ624Mmc6cz85QSw1miIPyHIICOV_GT-", videoId: "1aD9DozGPwF9jaeRGFMcoC2gnAsuc-s_z" },
-            { photoId: "1ZKpzJJ8UZaXwb55oEPj3fXmtF0u7iRLe", videoId: "1h0v4YC1hZIYXrc67iSIQ637Ym3zdm3jd" },
-            { photoId: "1y6LTKoAntol0ksUEmfz36F1Uz6V4YxS5", videoId: "17880rNJNbqPUuhKzZ15l_17rmC7bSFAr" },
-            { photoId: "1A1QwpvkX4nmpAoa2Z3-uc00ruBHvQTfT", videoId: "1RkH71yaYQyT7Ie28e6kmNfP5eyFOSBqt" },
-            { photoId: "15L7rO0QmhcZwaXAHr9mFI1ODdTKDHH0Y", videoId: "1c2RX0yWkqkKOehhFVehefj4mBvEYBYfx" },
-            { photoId: "12XmZnU71OfgBwQtSGKkBRckgVqn5axYI", videoId: "1fDqZjAOM6cQmDpWWTT_bockF2bO1W1jz" },
-            { photoId: "1YYJdN8UvcqqfkMgyJt0yeuSODK3vQ2qW", videoId: "1uqOjBmvxFWZTQNUf8tRGYGc_qM0FG9VP" },
-            { photoId: "1y6NsCBn-7rjKxPIT6lheR6IYUyGi1JxZ", videoId: "1ij3p_jQ_-CmwCRlvtmJubmBG9Oc9Jrro" },
-            { photoId: "1PuMReL5z7-nXZb_hcQbawdO7HetL4J8J", videoId: "1ts5iZtMIlMDXDwl5ZqS-pLRZvSJRxkpD" },
-            { photoId: "19YcqpX5ht4xsMYZdRfL7lLqGjwUcXowi", videoId: "1ubZaeuKUQVZmGKQ5oujNa37EXrlIYl0j" },
-            { photoId: "1x5Xzy7zG0MyRHSxozh_4ZMEIgElq63iX", videoId: "1_47BP_unXxs1n66QXo9CDisQKDpB29w8" },
-            { photoId: "1kcv2OiblgiVUj4VYMo-WAi4gozgOfmk7", videoId: "1XefvE8Rd84j8U8prRix40nG8Jse5Uuvg" },
-            { photoId: "1k0dJO7RzAiPNKW4loo3wnQHhZpZxUseo", videoId: "1CRfykv_3KDMQ30aUiHtinBUMBMFi29kT" },
-            { photoId: "19EEesr2f2v2rTfiKmrBag5zSArrhlVG_", videoId: "12cyGOgWcnbrkVXQeU-LGRmzDTVmFuNMP" },
-            { photoId: "1cAx9TfXuwe0LaJRWqnaEtSrbGidzxJcl", videoId: "1M3HkFyMw0RNf4r6WJs7sDVNi0_wk1XyW" },
-            { photoId: "1zNPT56EqISZnMFZYe90gjdIMxhlvnMPg", videoId: "1ZI9Zw677GvPsZle-F-lY6f66sQySKKuc" },
-            { photoId: "16bg4EBSLovSUKSfrCZe-j5JVt4x867BV", videoId: "1_sBLtJGTENLzGCuVZAFqafBLW-RZpgQU" },
-            { photoId: "1pZicjsAdg2o-jxRt2WBEasGhLFw7FR9_", videoId: "1wclE7Wqvaj0rx6TOGzJXZgmWVKm15B9z" },
-            { photoId: "1it6yC2U4lm4hs2abegfdEqGlToyTii6Z", videoId: "1h31xT6rpV2DYZBj4GcK2X2j52Vbw7qU4" },
-            { photoId: "1rvHTOTyY3xD9pMQK2_OhFe1inahVnVH3", videoId: "1noiB-rHGLfEKfVuzei3EHXdb9SjFqUnn" },
-            { photoId: "19ru0IfvEknD_BoN5DIWiyQZmVqEJv3TO", videoId: "1QFasiuhllGSKRguCeOawHxN_pQWWT73H" },
-            { photoId: "11XoSW6Q1OOs5VnHy1HC9aZe7hLcyn0Is", videoId: "1YzWmvblI_i56Q39ZW7UQdYzFt9Vkzj2D" },
-            { photoId: "1RtTraGUoP482cCpV7Vjo5eGNlbmsWcVP", videoId: "1YC09GIxe8wahSCWSiQYSFIxeQeqps64O" },
-            { photoId: "1Ovc822ByhL97CfkLABo9k531Sz0Q6cQO", videoId: "1nZQiN-rEjw7Acu-VgU7X-QblzLP84_rp" },
-            { photoId: "1cPCZ19DMejbrsXgghE-Hd3mOfZTtPFOB", videoId: "1ZWeyzGk3sHy8hCVatl41edmpOnII6pSf" },
-            { photoId: "1Frb4X1L5n324xc5ELE7uBxlIffTSr1Ad", videoId: "1XtuAK4AH5tuws-P8JH9Xlj0QQJP44UgG" },
-            { photoId: "1VsqyIR5V9-Dlbh8yr654FaVfcNmFd0yK", videoId: "1cl8HtCsirh7blsqggxjukCzR1Nd7UXBx" },
-            { photoId: "1YVOCviZ0h6E_JRpoFkO_9X9AtaMHwTZ8", videoId: "1GTvCCJ1ELRwXRzlTQQSGw2c0fK75g3ge" },
-            { photoId: "13eoANDtUM3F952a3lHPTqzZNyJ9WApMK", videoId: "13PKnzlbvRXzemGxkcViVgxDH84s4bEyz" },
-            { photoId: "11ZVLLEUMkxfjCAqfUz_ARVrtKMm4C2yR", videoId: "1FM_-sypG3RZNMIAxf5Ri1d1f23tK67wr" },
-            { photoId: "1aHZ9d4obBFjywpDSr-SUBu5Pz3Hyx2wN", videoId: "1UyvU-ccOR-0kjOXfuB7KpK_Mn5pPLjD4" },
-            { photoId: "1kh9wvjhIhMDwOz_2a3OqIcOnA3c-LMri", videoId: "12u5FehhVkskZnteFxBw8Du-jUwNec6p-" },
-            { photoId: "1GMW8pUzZsM27l5SveGgyTv_MP90llt2Z", videoId: "18sN1f0p8KJz72-6ocv9vmwyw5q-rLDIn" },
-            { photoId: "1eThTmy7MyLNsOaPyCmJ24KFygNUPHj9L", videoId: "1xpYcWawn0tr_qxVhcWL0aFHp66BOLsr6" },
-            { photoId: "1ZvHJIIDwxxKz2BxizJbDKE4YunQQym3Y", videoId: "1vfQt_pBIpE2N5Ei68GrLmfz9LkVkIyPc" },
-            { photoId: "1iMbKD2_wl9L8-LPH3Jh34S7EqtHXQOig", videoId: "1TfcyFXLtVSI4WSm0HpfXfUXGi2SUG2WR" },
-            { photoId: "116Pu4_3YaUoGjRomlZC81txajLtmj7RR", videoId: "1ow7C-SDB1ig27Nja2vjCpbbog8AWM9Iu" },
-            { photoId: "1OWt1zlvOeA9wRDZQildBXL5ItIcMBORJ", videoId: "1rTU4W5Vzh7DQld3sbA6c0TCchxRaaaaB" },
-            { photoId: "19YOQnMYAJ00YFrm-p0Is7ZioOzimfO6M", videoId: "1zA4wnjoqhpH4K6OloXPHwyk1N6DK0z2m" },
-            { photoId: "1aNaM13k08T9etBcam4eYK1FtkiNlqXiC", videoId: "1S2Qy1tD75dvHFrQHSsMnmQGt5bBF2yFN" },
-            { photoId: "1IB468FO90DoJxHNDHpC62e2Q4cLIcm5J", videoId: "166sbLoZqRq2MnXLCmyNYFA1t7JmEysqx" },
-            { photoId: "1tIZ29sJA89LyQZmqbqDy44r7_73ru3J6", videoId: "1DbgpKJY_AzSCbpDjV4i6US5K9Twke8go" },
-            { photoId: "1AY5OexlwZVamqJyneJ5YLuWqOyEedGPP", videoId: "1a9l2nw9Sq958-afY1FOcuzoyTn1buui7" },
-            { photoId: "1FHtfOPrmltNcAp3GrplPT5-hUr_LrOSQ", videoId: "16cnGXeiKaWfrHlP14p4RlcCxsNaYJBox" },
-            { photoId: "1Hc31pqLyjuwjWstzJHtBMvRbOnyg1GmX", videoId: "1E0EpjszyqyHNkeynTwWoFl-eLEW-qg_x" },
-            { photoId: "1GDpzXDwEDQV1Ah9PDLTLjD2csS_f6yLv", videoId: "1Kl6r0a9FXhbCJRKlwmiz4S8vxcn0jtVQ" },
-            { photoId: "1EHeH1MwCqkWNJaDVLnIYvf27CJZ5VlUE", videoId: "1SKv1Jg6Hzp4gOKRaYZVyVOYuEJuuBtZP" },
-            { photoId: "103GVzvouvaUpqHuOGXFj-2GOKkGNl8LP", videoId: "1oRoZP-OFLoGmgxwp0-IlrryK5jA6_M3Z" },
-            { photoId: "1bAvzuG7xUOVsSZ6Z7jKzkzEs72O6geZf", videoId: "1ZMydqnq2O1WDXjU-XyjJLhzfI8e1zrhW" },
-            { photoId: "1Nm-3EXKCDVRdtdRk8Z0owvp_K2GrScAC", videoId: "1Ei3o69KdtHUVxiRhnzEXtx7XMQrBrbGH" },
-            { photoId: "1Cafbr9ZXowfa_kleDxnWHSkexsRVFlA9", videoId: "139qiuMN6G_PPr3asoPmAUS96dPiANAvo" },
-            { photoId: "1iAYGi4KOWhRb5ypTQ31rUJ-D1bC7GgHB", videoId: "10qGS0TwHqSOHnRXosCj5Sw3ceqSJJmyh" },
-            { photoId: "1HXFOZRgFrYzHFKm-S_epuVnMZ_Hc-TXx", videoId: "1QB2vN5QSwVmq0nnnLoJDWsO54ZgPrJuW" },
-            { photoId: "184Ydf-CCUtAdf5yyXpFmYkWCVKATAORO", videoId: "1FVhHek09ykRfYnhQlKxOEWQlrf4SYhH_" },
-            { photoId: "1eq0eJum0lKEkiUy9h0foKe_sN_prS1xW", videoId: "1Vdu8JU566eehy54gqF2LhwPDg850xSSq" },
-            { photoId: "1W56_vh5Gu6ABBHu_QN8JLjcIFsynTMMG", videoId: "1JCyyu89G-58T894_L4eOQ-0UEO1OLGQq" },
-            { photoId: "1TljHK26FjoU9fWlBXUm0HcgYhNfnfPPL", videoId: "1TR7ZQGLnqj2oGBWxRZLHc4H2qkVbONo6" },
-            { photoId: "17M-LZDnb-sSixzWP7coX03Huv1fUJ5aD", videoId: "1WHlbFJLg3Cy4_WYjhnQt7-GMkaTIzQI-" },
-            { photoId: "19DGU9yjjKd2QHCevvnrztfwr8t26Vfd7", videoId: "13W2YwtxqQwHm_oJRvM4vf0TxpeM9rm75" },
-            { photoId: "1OswGoZLomeSNJwsCt_NY0PSj027mMxtt", videoId: "1wBCrlgAvR9_0RrpH18Ad89cFBn6WU9BW" },
-            { photoId: "1mr9WPrVzpy4kKhBQ1wI5B6OcAk5sIdtg", videoId: "1e8d9ZEcXRWNxwT_XvVkKQlp35csSrrvJ" },
-            { photoId: "1YoLbOj7VzeexO3Y1KKlPKASJHASk8D3s", videoId: "1wJjZDXZEbyZRlzEmHUfLUzhWGGrKAuM2" },
-            { photoId: "13rVriiKhwtSQadcU1sYcKZuUaRvX6qDr", videoId: "1HEJ69e8eHspNR7dA9GhWnar9JaxEJmpV" },
-            { photoId: "1siJRUA6lS_3bNX_sy-4GQ24zrWX9XBvc", videoId: "1Sjwlddf24SE-4oNUWm3SPfW73lfZmV_a" },
-            { photoId: "1VC-26iK4ZQwsWhANai6sPy6JcLJ7SnyM", videoId: "1icKBUwQ24BQlXbKGhhWya_TleLdIJcGY" },
-            { photoId: "1GNPSK3-NrxHb7c6HPrIhFA5Vp43HFRjI", videoId: "17ZUO_T7AlaNef0Y2BNzVIK_h9Y16O_xM" },
-            { photoId: "14Sb0c-6fRJrQByW1tgdGK_y20jzcB3E4", videoId: "1ptojoOjQIsecl2v8zK_xk-Wi5wzBbrR7" },
-            { photoId: "1cbA3i0T4JqR0gk_NoHDjEIJ6ZApbmW4e", videoId: "1GEogkubfHN7CBpGyQD1_UNzfRVC8zq8_" },
-            { photoId: "1C7izj29F_FCtTHLbRVjsgumyVbCzQRVS", videoId: "11APjQ3aj4or1coyWy69azu8RtwhIcVdp" },
-            { photoId: "1D4ntS-gg2N1agxGrIQqbm4L9Z4CqqT7L", videoId: "1ChmZfap_7ondAp9o40QNfpfF6_D63HOd" },
-            { photoId: "1hxiiuBuMizASWJ-0vd6Wq11rrxNoa5wA", videoId: "1WRHP1x1lSLiW8a98xqLUjtIulKRlB2UQ" },
-            { photoId: "1UUy8UoaDDsC3EK65yvqQk1gA-Ri7nIN3", videoId: "1PcddKOZO8GThZIqj0Q7eumy1wtgMXUAg" },
-            { photoId: "1gYGkFdMExXsLpw6LKl2nT0ggIZ7s8Jcg", videoId: "1BZ2T6AgHhDhtl2iOMPkq_wsr7hyBU7zf" },
-            { photoId: "1tf-WzvxJ2DqzYMzGRWZ6vdduhrN75lmC", videoId: "1o_4IAjQCkx8BA67a59TTWQXZddDidY_D" },
-            { photoId: "1YIWkJX_pLTiTv-khvY7VcbWEvTXFMg7j", videoId: "1kkr4Q33DFOlpjhkuuzxeM55OJx3PG3C5" },
-            { photoId: "1x4fZ-_RECZlfpzdFlJYY0DO3eqRCUf3b", videoId: "1WFeQP_gI_W76cRMIEyqTNqQ5UocynEBV" },
-            { photoId: "11nBcnSL3FDcAdcKTe6vhrehaO_HqSFiv", videoId: "1rDxU60_Y1LFx73G6ThSpzbUN-_5V8skA" },
-            { photoId: "15j6IWxFcaNzeybB6FiM7u8u6eDdASot9", videoId: "1d6MHTDnw1BO_vdevTj2JFt8JCpsJXJpd" },
-            { photoId: "1InAlmtp_olSUf-neFfPBlMLEgWsRrk92", videoId: "1KPZXKCrPBGMzV60havMhbTlGel0Ev1uF" },
-            { photoId: "11S3tE4l6mfw17wlXvQ3fo0_kBs5gnGv-", videoId: "1c4LGyVw86Yf1_tLUEYFmOktGt9Rvl4Es" },
-            { photoId: "1KXtFTmPGz0B5ZHb7meStgGSkT94C4Kyf", videoId: "1IMFKnbQCRuL1K-OBVSv-pjKphx88aDNV" },
-            { photoId: "173ldBlJ-Eg8X4wvJOrvyyYtqmaQpUHid", videoId: "17Ap26slnyVkiO7mggCoBcd693ln5Q0FJ" },
-            { photoId: "1-ZBq2Sd8kjfwCKPbS6boqUmTaR97HyET", videoId: "16SGGrteza1RqO0cfiAcPgRLY2OOd-Ht9" },
-            { photoId: "1xIOmqb4BFESiS7tZwQZ8I3fW5a15HAkC", videoId: "1RWxdU_yhGkexBAITNtmRWFu6c5dMNj6h" },
-            { photoId: "1UxFOi9FiGZqlboUF-SE-QjHJA1oip2JH", videoId: "1HTFn6jS_57FnCDlFe1uMjKMoNsS6-3Wg" },
-            { photoId: "1tlmiqO1rNkiPFypoQwom5gWNW0TL9WMq", videoId: "1kUuJ9rTSfD0L54g4eqC1vWQ66ND_jMDP" },
-            { photoId: "1g4Tjwgprv_ecou5WqVPfSVkrXoOx2xwG", videoId: "1jVtjSsRPzcpVUnRK10liM4Bk7rTeaIRx" },
-            { photoId: "1vENoVOSd1Hk3Y3mWtp1YiVYl8wzJ5wCZ", videoId: "1ycoH-EbZIdaheD4UVTdIr9VullpnVcCi" },
-            { photoId: "1ZFVKj9icNvZ5jO0yhgvk-uUwyu1ifqMZ", videoId: "1Sf07p5tmNA1Jdww4ubHqnOiU0_aHSSAr" },
-            { photoId: "1Nz9AG5_a5uQpU2qDeVK_DafO0M55BptY", videoId: "1k3-IDo6WGCK5zEuOTstjl5ZRCCDwGaKL" },
-            { photoId: "1lp-0_v8kOz10lqIkGvVzSef1U1xcPIzz", videoId: "1mQU7bEnjcumnUzSed1vutMytbvC6B3q1" },
-            { photoId: "16jZGv4JUWtTscIkpuqLpztKVvZWDea4D", videoId: "1UQcgmkA-cR18398tkZEPQ6l3gqT9K8Rm" },
-            { photoId: "1JPurY59VtFQ0L1oOSHtPKpnVmYijIKo1", videoId: "11yDQAh5PWdVqE9vrKOkEtY8cQ4oncAgG" },
-            { photoId: "10rag8mvqs6ND1n1Humm_X3YadmLc4v7g", videoId: "156VGLm81oBF-QtpnAseM5VlsMJUmdXX7" }
-        ];
-
+        const fileLoaderSection = document.getElementById('file-loader-section');
+        const fileDropZone = document.getElementById('file-drop-zone');
+        const jsonFileInput = document.getElementById('jsonFileInput');
+        const galleryContainer = document.getElementById('gallery-container');
+        const viewWrapper = document.querySelector('.view-wrapper');
         const thumbnail = document.getElementById('thumbnail');
         const videoPlayer = document.getElementById('videoPlayer');
         const gridContainer = document.getElementById('gridContainer');
         const errorMessage = document.getElementById('errorMessage');
+        const backBtn = document.querySelector('.back-btn');
+        const randomBtn = document.getElementById('random-btn');
+        const gridBtn = document.getElementById('grid-btn');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+        const suggestionsGrid = document.getElementById('suggestions-grid');
+        
+        let mediaList = [];
+        let currentView = 'grid'; 
+        
+        const GRID_THUMBNAIL_SIZE_PARAM = '=s480';
+        const MAIN_THUMBNAIL_SIZE_PARAM = '=s800';
 
-        // Função para embaralhar a lista (Fisher-Yates shuffle)
-        function shuffleArray(array) {
-            const shuffled = [...array];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        window.addEventListener('load', loadMediaFromSession);
+
+        function loadMediaFromSession() {
+            try {
+                const storedMedia = localStorage.getItem('mediaData');
+                if (storedMedia) {
+                    mediaList = JSON.parse(storedMedia);
+                    if (mediaList && mediaList.length > 0) {
+                        initializeApp();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error("Erro ao carregar dados do local storage:", e);
+                localStorage.removeItem('mediaData');
             }
-            return shuffled;
+            fileLoaderSection.classList.remove('hidden');
         }
 
-        function loadRandomMedia() {
-            // Limpa estados anteriores
-            thumbnail.style.display = 'none';
-            videoPlayer.style.display = 'none';
+        fileDropZone.addEventListener('click', () => jsonFileInput.click());
+        fileDropZone.addEventListener('dragover', (e) => { e.preventDefault(); fileDropZone.classList.add('dragover'); });
+        fileDropZone.addEventListener('dragleave', () => fileDropZone.classList.remove('dragover'));
+        fileDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+        jsonFileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+        function handleFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = e.target.result;
+                    const parsedData = JSON.parse(content);
+                    if (Array.isArray(parsedData) && parsedData.length > 0) {
+                        mediaList = parsedData;
+                        localStorage.setItem('mediaData', content); 
+                        initializeApp();
+                    } else { throw new Error('Arquivo JSON inválido ou vazio.'); }
+                } catch (error) { alert(`Erro: ${error.message}`); }
+            };
+            reader.onerror = () => alert('Ocorreu um erro ao ler o arquivo.');
+            reader.readAsText(file);
+        }
+        
+        function initializeApp() {
+            fileLoaderSection.classList.add('hidden');
+            galleryContainer.style.display = 'flex';
+            galleryContainer.style.animation = 'fadeIn 0.5s';
+            
+            window.addEventListener('hashchange', handleNavigation);
+            handleNavigation();
+        }
+
+        function handleNavigation() {
+            const videoId = new URLSearchParams(window.location.hash.substring(1)).get('video');
+            if (mediaList.length > 0) {
+                 if (videoId) {
+                    playVideo(videoId);
+                } else {
+                    if (currentView === 'grid') {
+                        showGridMode();
+                    } else {
+                        showRandomMode();
+                    }
+                }
+            } else if (videoId) {
+                displayError('Dados de mídia não carregados. Por favor, recarregue o JSON.');
+            }
+        }
+        
+        function playVideo(videoId) {
+            const mediaExists = mediaList.some(media => media.videoId === videoId);
+            if (!mediaExists) {
+                displayError('Vídeo não encontrado.');
+                window.location.hash = '';
+                return;
+            }
+            
+            viewWrapper.style.display = 'block'; 
             gridContainer.style.display = 'none';
+            suggestionsContainer.style.display = 'none';
+            thumbnail.classList.remove('visible');
+            
+            videoPlayer.src = `https://drive.google.com/file/d/${videoId}/preview`;
+            videoPlayer.classList.add('visible');
+            
+            backBtn.style.display = 'block';
+            randomBtn.style.display = 'none';
+            gridBtn.style.display = 'none';
+            
+            loadSuggestions(videoId);
+        }
+        
+        function showRandomMode() {
+            currentView = 'random';
+            
+            viewWrapper.style.display = 'block'; 
+            suggestionsContainer.style.display = 'none';
+            
+            const selectedMedia = mediaList[Math.floor(Math.random() * mediaList.length)];
+            
+            gridContainer.style.display = 'none';
+            videoPlayer.classList.remove('visible');
             videoPlayer.src = '';
-            errorMessage.style.display = 'none';
-            errorMessage.textContent = '';
 
-            // Seleciona um par aleatório da lista
-            const randomIndex = Math.floor(Math.random() * mediaList.length);
-            const selectedMedia = mediaList[randomIndex];
-
-            // Define a URL da thumbnail
-            const primaryUrl = `https://drive.google.com/uc?export=view&id=${selectedMedia.photoId}&t=${Date.now()}`;
-            const fallbackUrl = `https://drive.google.com/thumbnail?id=${selectedMedia.photoId}&sz=w1200&t=${Date.now()}`;
-            thumbnail.src = primaryUrl;
-
-            // Verifica se a imagem carrega
-            thumbnail.onload = () => {
-                thumbnail.style.display = 'block';
-                thumbnail.classList.add('visible');
-                errorMessage.style.display = 'none';
+            const photoUrl = `https://drive.google.com/uc?export=view&id=${selectedMedia.photoId}${MAIN_THUMBNAIL_SIZE_PARAM}`;
+            thumbnail.src = photoUrl;
+            
+            thumbnail.onload = () => thumbnail.classList.add('visible');
+            thumbnail.onerror = () => { 
+                thumbnail.src = `https://drive.google.com/thumbnail?id=${selectedMedia.photoId}`; 
             };
-            thumbnail.onerror = () => {
-                thumbnail.src = fallbackUrl;
-                thumbnail.onerror = () => {
-                    thumbnail.style.display = 'none';
-                    errorMessage.textContent = `Erro ao carregar a imagem com ID: ${selectedMedia.photoId}. Verifique se o ID é válido, se o arquivo é uma imagem (JPEG/PNG) e está compartilhado com "Qualquer pessoa com o link".`;
-                    errorMessage.style.display = 'block';
-                    console.error(`Erro ao carregar a imagem: ${primaryUrl} e ${fallbackUrl}`);
-                    setTimeout(loadRandomMedia, 2000);
-                };
-            };
+            
+            thumbnail.onclick = () => { window.location.hash = `#video=${selectedMedia.videoId}`; };
 
-            // Configura o clique na thumbnail para carregar o vídeo
-            thumbnail.onclick = () => {
-                thumbnail.style.display = 'none';
-                errorMessage.style.display = 'none';
-                videoPlayer.src = `https://drive.google.com/file/d/${selectedMedia.videoId}/preview`;
-                videoPlayer.style.display = 'block';
-                videoPlayer.classList.add('visible');
-            };
+            backBtn.style.display = 'none';
+            randomBtn.style.display = 'block';
+            gridBtn.style.display = 'block';
         }
 
         function showGridMode() {
-            // Limpa estados anteriores
-            thumbnail.style.display = 'none';
-            videoPlayer.style.display = 'none';
+            currentView = 'grid';
+            
+            viewWrapper.style.display = 'none'; 
+            videoPlayer.classList.remove('visible');
             videoPlayer.src = '';
-            errorMessage.style.display = 'none';
-            errorMessage.textContent = '';
-            gridContainer.style.display = 'grid';
-
-            // Limpa o grid
+            thumbnail.classList.remove('visible');
+            suggestionsContainer.style.display = 'none';
             gridContainer.innerHTML = '';
+            
+            const shuffledMedia = [...mediaList].sort(() => 0.5 - Math.random());
+            shuffledMedia.forEach((media, index) => {
+                const link = document.createElement('a');
+                link.className = 'grid-item-link';
+                link.href = `#video=${media.videoId}`;
+                link.style.animationDelay = `${index * 0.05}s`;
 
-            // Embaralha a lista de mídia
-            const shuffledMedia = shuffleArray(mediaList);
-
-            // Adiciona todas as thumbnails ao grid
-            shuffledMedia.forEach(media => {
                 const img = document.createElement('img');
-                img.className = 'grid-item';
-                img.src = `https://drive.google.com/uc?export=view&id=${media.photoId}&t=${Date.now()}`;
-                img.alt = 'Thumbnail do Vídeo';
-                img.onload = () => {
-                    img.classList.add('visible');
+                img.className = 'grid-item-img';
+                img.alt = 'Thumbnail';
+                
+                const photoUrl = `https://drive.google.com/uc?export=view&id=${media.photoId}${GRID_THUMBNAIL_SIZE_PARAM}`;
+                img.src = photoUrl;
+                img.onerror = () => { 
+                    img.src = `https://drive.google.com/thumbnail?id=${media.photoId}`; // Fallback
                 };
-                img.onerror = () => {
-                    img.src = `https://drive.google.com/thumbnail?id=${media.photoId}&sz=w1200&t=${Date.now()}`;
-                    img.onerror = () => {
-                        console.error(`Erro ao carregar a imagem do grid com ID: ${media.photoId}`);
-                    };
-                };
-                img.onclick = () => {
-                    gridContainer.style.display = 'none';
-                    videoPlayer.src = `https://drive.google.com/file/d/${media.videoId}/preview`;
-                    videoPlayer.style.display = 'block';
-                    videoPlayer.classList.add('visible');
-                };
-                gridContainer.appendChild(img);
+
+                link.appendChild(img);
+                gridContainer.appendChild(link);
             });
+            
+            gridContainer.style.display = 'grid';
+            backBtn.style.display = 'none';
+            randomBtn.style.display = 'block';
+            gridBtn.style.display = 'block';
         }
 
-        function showRandomMode() {
-            gridContainer.style.display = 'none';
-            loadRandomMedia();
+        function goBackToGrid() {
+            window.location.hash = '';
+        }
+        
+        function loadSuggestions(currentVideoId) {
+            suggestionsGrid.innerHTML = '';
+            
+            const availableMedia = mediaList.filter(media => media.videoId !== currentVideoId);
+            
+            const shuffled = availableMedia.sort(() => 0.5 - Math.random());
+            const suggestions = shuffled.slice(0, 5);
+
+            if (suggestions.length > 0) {
+                suggestions.forEach((media) => {
+                    const link = document.createElement('a');
+                    link.className = 'suggestion-item-link grid-item-link';
+                    link.href = `#video=${media.videoId}`;
+
+                    const img = document.createElement('img');
+                    img.className = 'suggestion-item-img';
+                    img.alt = 'Sugestão de Vídeo';
+                    
+                    const photoUrl = `https://drive.google.com/uc?export=view&id=${media.photoId}${GRID_THUMBNAIL_SIZE_PARAM}`;
+                    img.src = photoUrl;
+                    img.onerror = () => { 
+                        img.src = `https://drive.google.com/thumbnail?id=${media.photoId}`; 
+                    };
+
+                    link.appendChild(img);
+                    suggestionsGrid.appendChild(link);
+                });
+                suggestionsContainer.style.display = 'flex'; // Altera para flex para permitir centralização do conteúdo
+            } else {
+                suggestionsContainer.style.display = 'none';
+            }
         }
 
-        // Carrega o modo aleatório ao abrir a página
-        showRandomMode();
+        function displayError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => { errorMessage.style.display = 'none'; }, 3000);
+        }
     </script>
 </body>
-
 </html>
