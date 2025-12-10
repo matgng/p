@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria de Vídeos Moderna</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    
+    <style>
+        :root {
+            --color-bg-dark: #121212;
+            --color-bg-light: #1E1E1E;
+            --color-primary: #00A8E8;
+            --color-primary-dark: #007EA7;
+            --color-text: #E0E0E0;
+            --color-text-muted: #888;
+            --border-radius: 12px;
+            --transition-speed: 0.3s;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--color-bg-dark);
+            color: var(--color-text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 30px;
+        }
+        
+        body:has(#gallery-container[style*="flex"]) {
+            min-height: auto;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUpFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        #file-loader-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+            min-height: 100vh;
+            width: 100%;
+        }
+        
+        #file-drop-zone {
+            width: clamp(300px, 80vw, 500px);
+            padding: 40px 20px;
+            border: 2px dashed var(--color-text-muted);
+            border-radius: var(--border-radius);
+            background-color: var(--color-bg-light);
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
+            cursor: pointer;
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #password-input-wrapper {
+            width: 100%;
+            margin-top: 20px;
+            display: none; 
+            flex-direction: column;
+            gap: 10px;
+            animation: fadeIn 0.5s;
+        }
+
+        #password-input {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--color-text-muted);
+            background-color: var(--color-bg-dark);
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+        
+        #password-submit {
+            padding: 10px 20px;
+            background-color: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+            font-weight: 600;
+        }
+        
+        /* ESTILOS DO UTILIÁRIO MINIMIZÁVEL */
+        #utility-section {
+            margin-top: 30px; 
+            width: clamp(300px, 80vw, 500px); 
+            padding: 0; /* Removendo padding para controle fino */
+            background-color: var(--color-bg-light); 
+            border-radius: var(--border-radius); 
+            display: flex; 
+            flex-direction: column; 
+            text-align: left;
+        }
+
+        #utility-header {
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            cursor: pointer;
+            background-color: var(--color-bg-light);
+            border-radius: var(--border-radius);
+            transition: background-color var(--transition-speed);
+            border-bottom: 2px solid transparent;
+        }
+
+        #utility-header:hover {
+            background-color: #252525;
+        }
+
+        #utility-content {
+            padding: 0 20px 20px 20px; /* Padding interno */
+            display: none; /* Inicia escondido */
+            flex-direction: column;
+            gap: 10px;
+            border-top: 1px solid var(--color-bg-dark);
+            animation: fadeIn 0.5s;
+        }
+
+        #utility-content.expanded {
+            display: flex;
+        }
+        /* FIM ESTILOS DO UTILIÁRIO */
+        
+        #utility-section h4 { color: var(--color-primary); margin-top: 10px; }
+        .utility-info { font-size: 0.9rem; color: var(--color-text-muted); font-weight: 400; margin-bottom: 10px; }
+        
+        #utility-section textarea {
+            width: 100%; 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px solid var(--color-text-muted); 
+            background-color: var(--color-bg-dark); 
+            color: var(--color-text); 
+            font-size: 0.8rem;
+            resize: vertical;
+        }
+        
+        #utility-section input[type="password"] {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--color-text-muted);
+            background-color: var(--color-bg-dark);
+            color: var(--color-text);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .utility-btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .clear-btn {
+            background-color: #e8003e;
+            transition: background-color var(--transition-speed);
+        }
+        .clear-btn:hover {
+             background-color: #a7002e;
+        }
+        
+        #file-drop-zone.dragover { background-color: #2a2a2a; border-color: var(--color-primary); }
+        #file-drop-zone h2 { font-size: 1.5rem; margin-bottom: 10px; }
+        #file-drop-zone p { color: var(--color-text-muted); }
+        #jsonFileInput { display: none; }
+        
+        #gallery-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1600px;
+            padding: 20px;
+            padding-top: 50px;
+        }
+        
+        #main-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideUpFadeIn 0.5s ease-out;
+        }
+
+        #main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--color-primary), #00F5D4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            animation: slideUpFadeIn 0.5s ease-out 0.2s;
+            animation-fill-mode: backwards;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            transition: background-color var(--transition-speed), transform var(--transition-speed), box-shadow var(--transition-speed);
+            box-shadow: 0 4px 15px rgba(0, 168, 232, 0.2);
+        }
+
+        .btn:hover {
+            background-color: var(--color-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 168, 232, 0.3);
+        }
+
+        .btn.back-btn { background-color: var(--color-bg-light); display: none; }
+        /* Estilo para o botão de limpar na galeria */
+        .btn.clear-data-btn-gallery {
+            background-color: #e8003e; 
+            order: 1; /* Posição à esquerda do grupo */
+        }
+        .btn.clear-data-btn-gallery:hover {
+            background-color: #a7002e;
+        }
+        
+        .view-wrapper {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16/9;
+            margin-bottom: 30px;
+            position: relative;
+            display: none;
+        }
+
+        #thumbnail, #videoPlayer {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--border-radius);
+            border: 3px solid var(--color-primary);
+            box-shadow: 0 8px 30px rgba(0, 168, 232, 0.15);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            visibility: hidden;
+        }
+
+        #thumbnail { object-fit: contain; cursor: pointer; }
+        
+        #thumbnail.visible, #videoPlayer.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #gridContainer {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+            padding: 20px 0;
+            margin-top: 0;
+        }
+        
+        .grid-item-link {
+            display: block;
+            aspect-ratio: 16/9;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUpFadeIn 0.5s ease-out forwards;
+            border: 2px solid var(--color-bg-light);
+        }
+        
+        .grid-item-link:hover { transform: scale(1.05); box-shadow: 0 8px 25px rgba(0, 168, 232, 0.3); }
+        .grid-item-img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition-speed); }
+        .grid-item-link:hover .grid-item-img { transform: scale(1.1); }
+        .grid-item-link::after {
+            content: '▶'; font-size: 50px; color: white; position: absolute; inset: 0;
+            background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity var(--transition-speed); text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .grid-item-link:hover::after { opacity: 1; }
+
+        /* Estilo para a seção de sugestões */
+        #suggestions-container {
+            width: 100%;
+            max-width: 1400px;
+            padding: 20px 0;
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            display: none;
+        }
+
+        #suggestions-container h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center; 
+            color: var(--color-primary);
+            width: 100%; 
+            max-width: 1400px;
+        }
+        
+        .suggestions-wrapper {
+            width: 100%;
+            max-width: 100%; 
+            margin: 0 auto;
+        }
+        
+        #suggestions-grid {
+            display: flex; 
+            flex-wrap: nowrap;
+            gap: 15px;
+            padding-bottom: 10px;
+            overflow-x: auto; 
+            justify-content: center;
+            
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-primary) var(--color-bg-light);
+        }
+        
+        #suggestions-grid::-webkit-scrollbar { height: 8px; }
+        #suggestions-grid::-webkit-scrollbar-track { background: var(--color-bg-light); border-radius: 10px; }
+        #suggestions-grid::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 10px; }
+
+
+        .suggestion-item-link {
+            flex: 0 0 200px;
+            aspect-ratio: 16/9;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+            border: 2px solid var(--color-bg-light);
+        }
+
+        .suggestion-item-link:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0, 168, 232, 0.2); }
+        .suggestion-item-img { width: 100%; height: 100%; object-fit: cover; }
+
+
+        #errorMessage {
+            color: #ff4d4d; background-color: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3);
+            padding: 15px; border-radius: var(--border-radius); margin-top: 20px; display: none;
+            text-align: center; max-width: 80%; animation: fadeIn 0.5s;
+        }
+        
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            #gridContainer { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+            .suggestion-item-link { flex: 0 0 150px; }
+            #main-header h1 { font-size: 2rem; }
+            .btn { padding: 10px 22px; font-size: 0.9rem; }
+            .view-wrapper { aspect-ratio: unset; height: 50vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <section id="file-loader-section">
+        <div id="file-drop-zone">
+            <input type="file" id="jsonFileInput" accept=".json">
+            <h2 id="drop-zone-title">Arraste e Solte seu JSON Criptografado</h2>
+            <p id="drop-zone-text">ou clique aqui para selecionar</p>
+            
+            <div id="password-input-wrapper">
+                <input type="password" id="password-input" placeholder="Digite a Senha (qualquer tamanho)">
+                <button id="password-submit">Desbloquear Galeria</button>
+            </div>
+            </div>
+        
+        <div id="utility-section">
+            <h3 id="utility-header">🛠️ Utilitário Criptografia/Descriptografia (Clique para Expandir)</h3>
+            <div id="utility-content" class="hidden">
+                <p class="utility-info">Modo: AES/CBC (Seguro, senha de **qualquer tamanho**)</p>
+                
+                <h4>Criptografar JSON:</h4>
+                <textarea id="plaintext" rows="3" placeholder="Cole aqui o seu JSON ORIGINAL (Ex: [ { 'id': '...' } ] )"></textarea>
+                <input type="password" id="encrypt-password" placeholder="Senha">
+                <button id="encrypt-btn" class="btn">Criptografar</button>
+                <textarea id="encrypted-output" rows="3" readonly placeholder="Saída Base64 (para o arquivo .json)"></textarea>
+
+                <h4>Descriptografar Base64:</h4>
+                <textarea id="ciphertext" rows="3" placeholder="Cole aqui a string Base64 criptografada"></textarea>
+                <input type="password" id="decrypt-password" placeholder="Senha">
+                <button id="decrypt-btn" class="btn">Descriptografar</button>
+                <textarea id="decrypted-output" rows="3" readonly placeholder="Saída JSON Descriptografada"></textarea>
+
+                <hr style="margin: 15px 0;">
+                <button id="utility-clear-data-btn" class="btn clear-btn">🗑️ Limpar Dados e Sair</button>
+            </div>
+        </div>
+        </section>
+
+    <div id="gallery-container">
+        <header id="main-header">
+            <h1>Sua Galeria de Vídeos</h1>
+        </header>
+        <div class="controls">
+            <button class="btn clear-data-btn-gallery" onclick="handleClearData()">🗑️ Descarregar / Carregar Novo JSON</button>
+            <button class="btn back-btn" onclick="goBackToGrid()">❮ Voltar para Galeria</button>
+            <button class="btn" id="random-btn" onclick="showRandomMode()">Vídeo Aleatório</button>
+            <button class="btn" id="grid-btn" onclick="showGridMode()">Ver Todos</button>
+        </div>
+        
+        <div class="view-wrapper">
+            <img id="thumbnail" src="" alt="Thumbnail do Vídeo">
+            <iframe id="videoPlayer" frameborder="0" allow="autoplay; fullscreen"></iframe> 
+        </div>
+        
+        <div id="gridContainer"></div>
+        
+        <div id="suggestions-container">
+            <h2>Sugestões Aleatórias</h2>
+            <div class="suggestions-wrapper">
+                <div id="suggestions-grid"></div>
+            </div>
+        </div>
+        
+        <div id="errorMessage"></div>
+    </div>
+
+    <script>
+        const fileLoaderSection = document.getElementById('file-loader-section');
+        const fileDropZone = document.getElementById('file-drop-zone');
+        const jsonFileInput = document.getElementById('jsonFileInput');
+        const galleryContainer = document.getElementById('gallery-container');
+        const viewWrapper = document.querySelector('.view-wrapper');
+        const thumbnail = document.getElementById('thumbnail');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const gridContainer = document.getElementById('gridContainer');
+        const errorMessage = document.getElementById('errorMessage');
+        const backBtn = document.querySelector('.back-btn');
+        const randomBtn = document.getElementById('random-btn');
+        const gridBtn = document.getElementById('grid-btn');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+        const suggestionsGrid = document.getElementById('suggestions-grid');
+        
+        const passwordInputWrapper = document.getElementById('password-input-wrapper');
+        const passwordInput = document.getElementById('password-input');
+        const passwordSubmit = document.getElementById('password-submit');
+        const dropZoneTitle = document.getElementById('drop-zone-title');
+        const dropZoneText = document.getElementById('drop-zone-text');
+
+        // Elementos do Utilitário
+        const utilityHeader = document.getElementById('utility-header');
+        const utilityContent = document.getElementById('utility-content');
+        const encryptBtn = document.getElementById('encrypt-btn');
+        const decryptBtn = document.getElementById('decrypt-btn');
+        const utilityClearDataBtn = document.getElementById('utility-clear-data-btn'); // Botão de limpar do utilitário
+        const plaintextInput = document.getElementById('plaintext');
+        const encryptPasswordInput = document.getElementById('encrypt-password');
+        const encryptedOutput = document.getElementById('encrypted-output');
+        const ciphertextInput = document.getElementById('ciphertext');
+        const decryptPasswordInput = document.getElementById('decrypt-password');
+        const decryptedOutput = document.getElementById('decrypted-output');
+        
+        let mediaList = [];
+        let currentView = 'grid'; 
+        let rawEncryptedContent = null; 
+        
+        const GRID_THUMBNAIL_SIZE_PARAM = '=s480';
+        const MAIN_THUMBNAIL_SIZE_PARAM = '=s800';
+
+        window.addEventListener('load', loadMediaFromSession);
+        
+        // --- FUNÇÕES DE CRIPTOGRAFIA/DESCRIPTOGRAFIA (CBC - SENHA FLEXÍVEL) ---
+        
+        function encryptData(plainText, password) {
+            if (!password || password.length === 0) return null;
+            try {
+                const encrypted = CryptoJS.AES.encrypt(
+                    plainText,
+                    password, 
+                    {
+                        mode: CryptoJS.mode.CBC, 
+                        padding: CryptoJS.pad.Pkcs7
+                    }
+                );
+                return encrypted.toString(); 
+            } catch (e) {
+                console.error("Erro durante a criptografia:", e);
+                return null;
+            }
+        }
+        
+        function decryptData(encryptedText, password) {
+            if (!password || password.length === 0) return null;
+            
+            try {
+                const decrypted = CryptoJS.AES.decrypt(
+                    encryptedText.trim(), 
+                    password, 
+                    { 
+                        mode: CryptoJS.mode.CBC,
+                        padding: CryptoJS.pad.Pkcs7 
+                    }
+                );
+
+                const plainText = decrypted.toString(CryptoJS.enc.Utf8);
+                
+                if (!plainText || plainText.trim().length < 5 || plainText.indexOf('[') === -1) {
+                     throw new Error("Senha incorreta ou dados criptografados inválidos.");
+                }
+
+                return plainText;
+
+            } catch (e) {
+                console.warn("Descriptografia falhou:", e);
+                rawEncryptedContent = null; 
+                displayError("Senha incorreta ou erro no formato do arquivo. Tente novamente.");
+                return null;
+            }
+        }
+
+        // --- LÓGICA DO UTILIÁRIO E EVENTOS ---
+
+        // 1. Lógica para expandir/minimizar o utilitário
+        utilityHeader.addEventListener('click', () => {
+            utilityContent.classList.toggle('hidden');
+            utilityContent.classList.toggle('expanded');
+            
+            if (utilityContent.classList.contains('expanded')) {
+                 utilityHeader.textContent = '🛠️ Utilitário Criptografia/Descriptografia (Clique para Minimizar)';
+            } else {
+                 utilityHeader.textContent = '🛠️ Utilitário Criptografia/Descriptografia (Clique para Expandir)';
+            }
+        });
+
+        // 2. Funções de Criptografia/Descriptografia no Utilitário
+        encryptBtn.addEventListener('click', handleEncrypt);
+        decryptBtn.addEventListener('click', handleDecrypt);
+        utilityClearDataBtn.addEventListener('click', handleClearData);
+        
+        function handleEncrypt() {
+            const plainText = plaintextInput.value.trim();
+            const password = encryptPasswordInput.value;
+            encryptedOutput.value = '';
+
+            if (!plainText) {
+                alert("Por favor, insira o texto a ser criptografado.");
+                return;
+            }
+            if (!password) {
+                alert("Por favor, insira uma senha.");
+                return;
+            }
+
+            const encrypted = encryptData(plainText, password);
+            if (encrypted) {
+                encryptedOutput.value = encrypted;
+                ciphertextInput.value = encrypted;
+            } else {
+                encryptedOutput.value = 'ERRO na criptografia. Verifique o console.';
+            }
+        }
+
+        function handleDecrypt() {
+            const encryptedText = ciphertextInput.value.trim();
+            const password = decryptPasswordInput.value;
+            decryptedOutput.value = '';
+
+            if (!encryptedText) {
+                alert("Por favor, insira o texto Base64 a ser descriptografado.");
+                return;
+            }
+            if (!password) {
+                alert("Por favor, insira uma senha.");
+                return;
+            }
+
+            const decrypted = decryptData(encryptedText, password);
+            if (decrypted) {
+                try {
+                    decryptedOutput.value = JSON.stringify(JSON.parse(decrypted), null, 2);
+                } catch {
+                    decryptedOutput.value = decrypted;
+                }
+            } else {
+                decryptedOutput.value = 'ERRO na descriptografia. Senha incorreta ou formato inválido.';
+            }
+        }
+        
+        // 3. FUNÇÃO DE LIMPEZA DE DADOS (USADA NOS DOIS LUGARES)
+        function handleClearData() {
+            if(!confirm('Tem certeza que deseja limpar os dados carregados e a senha salva? Você será redirecionado para a tela inicial.')) {
+                return;
+            }
+            
+            localStorage.removeItem('mediaData');
+            localStorage.removeItem('mediaPassword');
+            mediaList = [];
+            
+            fileLoaderSection.classList.remove('hidden');
+            galleryContainer.style.display = 'none';
+            passwordInput.value = '';
+            rawEncryptedContent = null;
+            
+            window.location.hash = '';
+            
+            displayError('Dados da galeria descarregados com sucesso. Recarregue o JSON.');
+            // Pequeno atraso para o usuário ver a mensagem antes do reload
+            setTimeout(() => { location.reload(); }, 1500); 
+        }
+        
+        // --- LÓGICA DE CARREGAMENTO E DESBLOQUEIO DE ARQUIVO (MANTIDA) ---
+
+        function loadMediaFromSession() {
+            try {
+                const storedMedia = localStorage.getItem('mediaData');
+                const storedPassword = localStorage.getItem('mediaPassword');
+                
+                if (storedMedia && storedPassword) {
+                    const decrypted = decryptData(storedMedia, storedPassword);
+                    if (decrypted) {
+                        mediaList = JSON.parse(decrypted);
+                        if (mediaList && mediaList.length > 0) {
+                            initializeApp();
+                            return;
+                        }
+                    }
+                } else if (storedMedia && !storedPassword) {
+                    rawEncryptedContent = storedMedia;
+                    showPasswordPrompt(true);
+                    return;
+                }
+            } catch (e) {
+                console.error("Erro ao carregar/descriptografar dados do local storage:", e);
+                localStorage.removeItem('mediaData');
+                localStorage.removeItem('mediaPassword'); 
+            }
+            fileLoaderSection.classList.remove('hidden');
+        }
+
+        function showPasswordPrompt(isLocalStorageLoad = false) {
+            dropZoneTitle.textContent = 'Aguardando Senha';
+            dropZoneText.textContent = isLocalStorageLoad ? 'Senha necessária para desbloquear a galeria.' : 'Insira a senha para descriptografar o arquivo.';
+            
+            fileDropZone.style.cursor = 'default';
+            passwordInputWrapper.style.display = 'flex';
+            jsonFileInput.disabled = true;
+            passwordInput.focus();
+        }
+        
+        function hidePasswordPrompt() {
+            dropZoneTitle.textContent = 'Arraste e Solte seu JSON Criptografado';
+            dropZoneText.textContent = 'ou clique aqui para selecionar';
+            fileDropZone.style.cursor = 'pointer';
+            passwordInputWrapper.style.display = 'none';
+            jsonFileInput.disabled = false;
+        }
+
+        fileDropZone.addEventListener('click', (e) => {
+            if (passwordInputWrapper.style.display !== 'flex') {
+                jsonFileInput.click();
+            }
+        });
+        
+        // Eventos Drag and Drop
+        fileDropZone.addEventListener('dragover', (e) => { 
+            e.preventDefault(); 
+            if (passwordInputWrapper.style.display !== 'flex') {
+                fileDropZone.classList.add('dragover'); 
+            }
+        });
+        fileDropZone.addEventListener('dragleave', () => fileDropZone.classList.remove('dragover'));
+        fileDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileDropZone.classList.remove('dragover');
+            if (passwordInputWrapper.style.display !== 'flex') {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        jsonFileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        
+        passwordSubmit.addEventListener('click', processDecryption);
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                processDecryption();
+            }
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                rawEncryptedContent = e.target.result.trim(); 
+                showPasswordPrompt(false); 
+            };
+            reader.onerror = () => alert('Ocorreu um erro ao ler o arquivo.');
+            reader.readAsText(file);
+        }
+        
+        function processDecryption() {
+            const password = passwordInput.value;
+            
+            if (password.length === 0) {
+                displayError('A senha não pode ser vazia.');
+                return;
+            }
+            
+            const contentToDecrypt = rawEncryptedContent || localStorage.getItem('mediaData');
+
+            if (!contentToDecrypt) {
+                displayError('Nenhum dado para descriptografar. Recarregue o arquivo.');
+                hidePasswordPrompt();
+                return;
+            }
+
+            const decryptedContent = decryptData(contentToDecrypt, password);
+
+            if (decryptedContent) {
+                try {
+                    const parsedData = JSON.parse(decryptedContent);
+                    if (Array.isArray(parsedData) && parsedData.length > 0) {
+                        mediaList = parsedData;
+                        
+                        localStorage.setItem('mediaData', contentToDecrypt); 
+                        localStorage.setItem('mediaPassword', password);
+                        
+                        passwordInput.value = '';
+                        hidePasswordPrompt();
+                        initializeApp();
+                    } else { throw new Error('Conteúdo descriptografado inválido ou vazio.'); }
+                } catch (error) { 
+                    displayError(`Erro ao processar dados: ${error.message}`);
+                    passwordInput.value = '';
+                }
+            } else {
+                passwordInput.value = ''; 
+            }
+        }
+        
+        // --- FUNÇÕES DE NAVEGAÇÃO E EXIBIÇÃO (MANTIDAS) ---
+        
+        function initializeApp() {
+            fileLoaderSection.classList.add('hidden');
+            galleryContainer.style.display = 'flex';
+            galleryContainer.style.animation = 'fadeIn 0.5s';
+            
+            window.addEventListener('hashchange', handleNavigation);
+            handleNavigation();
+        }
+
+        function handleNavigation() {
+            const videoId = new URLSearchParams(window.location.hash.substring(1)).get('video');
+            if (mediaList.length > 0) {
+                 if (videoId) {
+                    playVideo(videoId);
+                } else {
+                    if (currentView === 'grid') {
+                        showGridMode();
+                    } else {
+                        showRandomMode();
+                    }
+                }
+            } else if (videoId) {
+                displayError('Dados de mídia não carregados. Por favor, recarregue o JSON.');
+            }
+        }
+        
+        function playVideo(videoId) {
+            const mediaExists = mediaList.some(media => media.videoId === videoId);
+            if (!mediaExists) {
+                displayError('Vídeo não encontrado.');
+                window.location.hash = '';
+                return;
+            }
+            
+            viewWrapper.style.display = 'block'; 
+            gridContainer.style.display = 'none';
+            suggestionsContainer.style.display = 'none';
+            thumbnail.classList.remove('visible');
+            
+            videoPlayer.src = `https://drive.google.com/file/d/${videoId}/preview`;
+            videoPlayer.classList.add('visible');
+            
+            backBtn.style.display = 'block';
+            
+            // Esconde os botões quando está na visualização de vídeo
+            document.querySelector('.clear-data-btn-gallery').style.display = 'none';
+            randomBtn.style.display = 'none';
+            gridBtn.style.display = 'none';
+            
+            loadSuggestions(videoId);
+        }
+        
+        function showRandomMode() {
+            currentView = 'random';
+            
+            viewWrapper.style.display = 'block'; 
+            suggestionsContainer.style.display = 'none';
+            
+            const selectedMedia = mediaList[Math.floor(Math.random() * mediaList.length)];
+            
+            gridContainer.style.display = 'none';
+            videoPlayer.classList.remove('visible');
+            videoPlayer.src = '';
+
+            const photoUrl = `https://drive.google.com/uc?export=view&id=${selectedMedia.photoId}${MAIN_THUMBNAIL_SIZE_PARAM}`;
+            thumbnail.src = photoUrl;
+            
+            thumbnail.onload = () => thumbnail.classList.add('visible');
+            thumbnail.onerror = () => { 
+                thumbnail.src = `https://drive.google.com/thumbnail?id=${selectedMedia.photoId}`; 
+            };
+            
+            thumbnail.onclick = () => { window.location.hash = `#video=${selectedMedia.videoId}`; };
+
+            backBtn.style.display = 'none';
+            // Mostra o botão de limpar na visualização de Modo Aleatório
+            document.querySelector('.clear-data-btn-gallery').style.display = 'block';
+            randomBtn.style.display = 'block';
+            gridBtn.style.display = 'block';
+        }
+
+        function showGridMode() {
+            currentView = 'grid';
+            
+            viewWrapper.style.display = 'none'; 
+            videoPlayer.classList.remove('visible');
+            videoPlayer.src = '';
+            thumbnail.classList.remove('visible');
+            suggestionsContainer.style.display = 'none';
+            gridContainer.innerHTML = '';
+            
+            const shuffledMedia = [...mediaList].sort(() => 0.5 - Math.random());
+            shuffledMedia.forEach((media, index) => {
+                const link = document.createElement('a');
+                link.className = 'grid-item-link';
+                link.href = `#video=${media.videoId}`;
+                link.style.animationDelay = `${index * 0.05}s`;
+
+                const img = document.createElement('img');
+                img.className = 'grid-item-img';
+                img.alt = 'Thumbnail';
+                
+                const photoUrl = `https://drive.google.com/uc?export=view&id=${media.photoId}${GRID_THUMBNAIL_SIZE_PARAM}`;
+                img.src = photoUrl;
+                img.onerror = () => { 
+                    img.src = `https://drive.google.com/thumbnail?id=${media.photoId}`; // Fallback
+                };
+
+                link.appendChild(img);
+                gridContainer.appendChild(link);
+            });
+            
+            gridContainer.style.display = 'grid';
+            backBtn.style.display = 'none';
+            // Mostra o botão de limpar na visualização de Grid
+            document.querySelector('.clear-data-btn-gallery').style.display = 'block';
+            randomBtn.style.display = 'block';
+            gridBtn.style.display = 'block';
+        }
+
+        function goBackToGrid() {
+            window.location.hash = '';
+        }
+        
+        function loadSuggestions(currentVideoId) {
+            suggestionsGrid.innerHTML = '';
+            
+            const availableMedia = mediaList.filter(media => media.videoId !== currentVideoId);
+            
+            const shuffled = availableMedia.sort(() => 0.5 - Math.random());
+            const suggestions = shuffled.slice(0, 5);
+
+            if (suggestions.length > 0) {
+                suggestions.forEach((media) => {
+                    const link = document.createElement('a');
+                    link.className = 'suggestion-item-link grid-item-link';
+                    link.href = `#video=${media.videoId}`;
+
+                    const img = document.createElement('img');
+                    img.className = 'suggestion-item-img';
+                    img.alt = 'Sugestão de Vídeo';
+                    
+                    const photoUrl = `https://drive.google.com/uc?export=view&id=${media.photoId}${GRID_THUMBNAIL_SIZE_PARAM}`;
+                    img.src = photoUrl;
+                    img.onerror = () => { 
+                        img.src = `https://drive.google.com/thumbnail?id=${media.photoId}`; 
+                    };
+
+                    link.appendChild(img);
+                    suggestionsGrid.appendChild(link);
+                });
+                suggestionsContainer.style.display = 'flex'; 
+            } else {
+                suggestionsContainer.style.display = 'none';
+            }
+        }
+
+        function displayError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => { errorMessage.style.display = 'none'; }, 5000); 
+        }
+    </script>
+</body>
+</html>
